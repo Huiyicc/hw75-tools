@@ -17,6 +17,7 @@
 #include <QMetaType>
 #include "protobuf/usb_comm.pb.h"
 #include "protobuf/uart_comm.pb.h"
+#include "image/Image.hpp"
 
 inline std::vector<uint8_t> unhexlify(const std::string &hex_string) {
 	std::vector<uint8_t> bytes;
@@ -61,11 +62,11 @@ namespace Lib {
 
 	struct HWDeviceDynamicFeatures {
 		bool Rgb = false;
-		bool Eink = true;
-		bool Knob = true;
-		bool KnobPrefs = true;
-		bool RgbFullControl = true;
-		bool RgbIndicator = true;
+		bool Eink = false;
+		bool Knob = false;
+		bool KnobPrefs = false;
+		bool RgbFullControl = false;
+		bool RgbIndicator = false;
 	};
 
 	struct HWDeviceDynamicVersion {
@@ -103,15 +104,20 @@ namespace Lib {
 		/** 获取瀚文设备列表(暂时只能获取扩展组件) */
 		size_t GetHWDevicesList(std::vector<HWDevice> &HWDevicesList);
 
-		HWDeviceDynamicVersion GetVersion(HWDevice &devices);
+		/** 获取扩展模块的版本号信息 */
+		HWDeviceDynamicVersion GetDynamicVersion(HWDevice &devices);
 
+		/** 设置扩展模块的屏幕
+		 * 注意: 屏幕尺寸只有296*128, 且只能显示黑白,输入图像注意处理
+		 * */
+		void SetDynamicScerrn(HWDevice &devices,QByteArray &imageArrar);
 
 	private:
 		constexpr static int HWVID = 0x1d50;
 		constexpr static int HWPID = 0x615e;
 		constexpr static int USB_COMM_USAGE_PAGE = 0xff14;
-		constexpr static int HID_COMM_REPORT_COUNT = 63;
-		constexpr static int USB_COMM_PAYLOAD_SIZE = HID_COMM_REPORT_COUNT - 1;
+		constexpr static int HID_COMM_REPORT_COUNT = 64;
+		constexpr static int USB_COMM_PAYLOAD_SIZE = HID_COMM_REPORT_COUNT - 2;
 
 		void readDelimitedD2H(google::protobuf::io::ZeroCopyInputStream *rawInput,
 		                      usb::comm::MessageD2H *message);

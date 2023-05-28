@@ -14,6 +14,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 include_directories( ./lib )
 file(GLOB USB_SOURCES lib/HID/*.cpp)
+file(GLOB UTILS_SOURCES lib/utils/*.cpp)
+file(GLOB IMAGE_SOURCES lib/image/*.cpp)
 file(GLOB PROTOBUF_SOURCES lib/protobuf/*.cpp)
 file(GLOB PROTOBUF_SOURCES lib/protobuf/*.cc)
 file(GLOB QT_SOURCES ui/*.cpp)
@@ -21,6 +23,8 @@ file(GLOB QT_SOURCES ui/*.cpp)
 
 set(PROJECT_SOURCES
         ${USB_SOURCES}
+        ${UTILS_SOURCES}
+        ${IMAGE_SOURCES}
         ${PROTOBUF_SOURCES}
         ${QT_SOURCES}
         main.cpp

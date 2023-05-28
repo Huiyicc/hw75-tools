@@ -153,6 +153,6 @@ message RgbIndicator {
 
 message EinkImage {
   required uint32 id = 1;
-  optional uint32 bits_length = 2 [ deprecated = true ];
+  // optional uint32 bits_length = 2 [ deprecated = true ];
   optional bytes bits = 3;
 }

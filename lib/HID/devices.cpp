@@ -3,6 +3,7 @@
 //
 #include "devices.hpp"
 #include <sstream>
+#include "utils/math.hpp"
 
 std::string padStringWithZeros(const std::string &str, int desired_length) {
 	std::string padded_str = str;
@@ -68,7 +69,7 @@ namespace Lib {
 		return HWDevicesList.size();
 	};
 
-	HWDeviceDynamicVersion HWDeviceTools::GetVersion(HWDevice &devices) {
+	HWDeviceDynamicVersion HWDeviceTools::GetDynamicVersion(HWDevice &devices) {
 		HWDeviceDynamicVersion result;
 		auto device = hid_open_path(devices.Path.toStdString().c_str());
 		if (!device) {
@@ -134,6 +135,50 @@ namespace Lib {
 		// 关闭设备
 		hid_close(device);
 		return result;
+	};
+
+	void HWDeviceTools::SetDynamicScerrn(HWDevice &devices, QByteArray &imageArrar) {
+		HWDeviceDynamicVersion result;
+		auto device = hid_open_path(devices.Path.toStdString().c_str());
+		if (!device) {
+			throw DeviceException(hid_error(nullptr));
+		}
+		usb::comm::MessageH2D message;
+		message.set_action(usb::comm::Action::EINK_SET_IMAGE);
+		// 创建EinkImage消息对象
+		usb::comm::EinkImage *einkImage = message.mutable_eink_image();
+		einkImage->set_id(Lib::RandomNumber(0, 1000));
+		//einkImage->set_bits_length(imageArrar.size());
+		einkImage->set_bits(imageArrar.data(),imageArrar.size());
+
+		//序列化消息
+		std::string message_str;
+		google::protobuf::io::StringOutputStream stringOutput(&message_str);
+		writeDelimitedH2D(message, &stringOutput);
+
+		std::vector<unsigned char> buf;
+		std::vector<unsigned char> out(HID_COMM_REPORT_COUNT, 0);
+		for (size_t i = 0; i <= message_str.size(); i += USB_COMM_PAYLOAD_SIZE) {
+			size_t end = std::min(i + USB_COMM_PAYLOAD_SIZE, message_str.size());
+			buf.assign(message_str.begin() + i, message_str.begin() + end);
+			out.assign(HID_COMM_REPORT_COUNT, 0);
+			out[0] = 1;
+			out[1] = buf.size();
+			std::copy(buf.begin(), buf.end(), out.begin() + 2);
+			// 将字节流发送到USB设备
+			int result_code = hid_write(device, reinterpret_cast<const unsigned char *>(out.data()),
+			                            out.size());
+			std::cout<<result_code<<std::endl;
+			if (result_code < 0) {
+				auto err = hid_error(device);
+				// 处理发送失败的情况
+				throw DeviceException(err);
+			}
+		}
+
+		// 关闭设备
+		hid_close(device);
+
 	};
 
 	void HWDeviceTools::readDelimitedD2H(google::protobuf::io::ZeroCopyInputStream *rawInput,

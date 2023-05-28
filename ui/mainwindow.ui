@@ -170,6 +170,237 @@
       <property name="title">
        <string/>
       </property>
+      <widget class="QTabWidget" name="tabWidget_motor_sbox">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>1181</width>
+         <height>601</height>
+        </rect>
+       </property>
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <widget class="QWidget" name="lamp_effect">
+        <attribute name="title">
+         <string>灯效</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Ink_screen">
+        <attribute name="title">
+         <string>墨水屏</string>
+        </attribute>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>241</width>
+           <height>571</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>屏幕预览</string>
+         </property>
+         <widget class="QLabel" name="preview_label">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>20</y>
+            <width>234</width>
+            <height>541</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QTabWidget" name="tabWidget_2">
+         <property name="geometry">
+          <rect>
+           <x>240</x>
+           <y>0</y>
+           <width>941</width>
+           <height>571</height>
+          </rect>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="tab_3">
+          <attribute name="title">
+           <string>上传图片</string>
+          </attribute>
+          <widget class="QLineEdit" name="elink_image_path">
+           <property name="geometry">
+            <rect>
+             <x>70</x>
+             <y>10</y>
+             <width>811</width>
+             <height>21</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="elink_switch_image">
+           <property name="geometry">
+            <rect>
+             <x>890</x>
+             <y>10</y>
+             <width>31</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>…</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label">
+           <property name="geometry">
+            <rect>
+             <x>12</x>
+             <y>10</y>
+             <width>61</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>图像路径:</string>
+           </property>
+          </widget>
+          <widget class="QGroupBox" name="groupbox_set_image">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>41</y>
+             <width>911</width>
+             <height>501</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>处理图像</string>
+           </property>
+           <widget class="QLabel" name="preview_label_temp">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>203</width>
+              <height>471</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pushButton_push_image">
+            <property name="geometry">
+             <rect>
+              <x>810</x>
+              <y>460</y>
+              <width>91</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>推送屏幕</string>
+            </property>
+           </widget>
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="geometry">
+             <rect>
+              <x>220</x>
+              <y>30</y>
+              <width>681</width>
+              <height>51</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>图像操作</string>
+            </property>
+            <widget class="QLabel" name="label_2">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>16</y>
+               <width>31</width>
+               <height>20</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>阈值:</string>
+             </property>
+            </widget>
+            <widget class="QSlider" name="threshold_progress_horizontalSlider">
+             <property name="geometry">
+              <rect>
+               <x>40</x>
+               <y>20</y>
+               <width>601</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+            <widget class="QLabel" name="threshold_progress_label">
+             <property name="geometry">
+              <rect>
+               <x>650</x>
+               <y>20</y>
+               <width>21</width>
+               <height>20</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QCheckBox" name="checkBox_tw_img">
+            <property name="geometry">
+             <rect>
+              <x>220</x>
+              <y>10</y>
+              <width>91</width>
+              <height>19</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>二值化图像</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="tristate">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </widget>
+         </widget>
+         <widget class="QWidget" name="tab_4">
+          <attribute name="title">
+           <string>插件</string>
+          </attribute>
+         </widget>
+         <widget class="QWidget" name="tab_5">
+          <attribute name="title">
+           <string>接口</string>
+          </attribute>
+         </widget>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="motor">
+        <attribute name="title">
+         <string>电机</string>
+        </attribute>
+       </widget>
+      </widget>
      </widget>
     </widget>
    </widget>
