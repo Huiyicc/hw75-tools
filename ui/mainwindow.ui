@@ -311,7 +311,7 @@
             <property name="geometry">
              <rect>
               <x>220</x>
-              <y>30</y>
+              <y>10</y>
               <width>681</width>
               <height>51</height>
              </rect>
@@ -358,28 +358,6 @@
               <string/>
              </property>
             </widget>
-           </widget>
-           <widget class="QCheckBox" name="checkBox_tw_img">
-            <property name="geometry">
-             <rect>
-              <x>220</x>
-              <y>10</y>
-              <width>91</width>
-              <height>19</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>二值化图像</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-            <property name="tristate">
-             <bool>false</bool>
-            </property>
            </widget>
           </widget>
          </widget>

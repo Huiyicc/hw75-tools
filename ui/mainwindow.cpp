@@ -21,10 +21,10 @@ void MainWindow::eventRegister() {
 	connect(ui->threshold_progress_horizontalSlider, &QSlider::valueChanged, this,
 	        &MainWindow::eventByValueChanged);
 	// 事件: 开启/关闭 二值化图像
-	connect(ui->checkBox_tw_img, &QCheckBox::stateChanged, this, [&](int c) {
-		ui->groupBox_4->setEnabled(c != 0);
-		updateUserPreviewImage();
-	});
+//	connect(ui->checkBox_tw_img, &QCheckBox::stateChanged, this, [&](int c) {
+//		ui->groupBox_4->setEnabled(c != 0);
+//		updateUserPreviewImage();
+//	});
 }
 
 void MainWindow::showEvent(QShowEvent *event) {
@@ -90,7 +90,6 @@ void MainWindow::eventByElinkSwitchImage(bool checked) {
 	ui->threshold_progress_horizontalSlider->setMaximum(m_userPushImage->GetMaximumThreshold());
 	ui->threshold_progress_label->setText("50");
 	ui->threshold_progress_horizontalSlider->setValue(50);
-	ui->checkBox_tw_img->setChecked(true);
 	ui->groupBox_4->setEnabled(true);
 	eventByValueChanged(50);
 }
@@ -100,9 +99,7 @@ void MainWindow::eventByPushImage(bool checked) {
 	try {
 		Lib::HWDeviceTools tools;
 
-		tools.SetDynamicScerrn(m_devices, *m_userPushImage->BinaryImgDataToBits(ui->checkBox_tw_img->checkState() > 0
-		                                                                       ? ui->threshold_progress_horizontalSlider->value()
-		                                                                       : -1));
+		tools.SetDynamicScerrn(m_devices, *m_userPushImage->BinaryImgDataToBits(ui->threshold_progress_horizontalSlider->value()));
 
 
 	}catch (Lib::DeviceException &e) {
@@ -131,10 +128,7 @@ void MainWindow::updateDynamicLabel() {
 
 void MainWindow::updateUserPreviewImage() {
 	QImage scaledimg;
-	std::shared_ptr<QImage> img = m_userPushImage->GetImage();
-	if (ui->checkBox_tw_img->checkState() > 0) {
-		img = m_userPushImage->GetBinaryImgData(ui->threshold_progress_horizontalSlider->value());
-	}
+	std::shared_ptr<QImage> img = m_userPushImage->GetBinaryImgData(ui->threshold_progress_horizontalSlider->value());
 	scaledimg = img->scaled(ui->preview_label_temp->width(), ui->preview_label_temp->height(), Qt::KeepAspectRatio);
 	ui->preview_label_temp->setPixmap(QPixmap::fromImage(scaledimg));
 }
