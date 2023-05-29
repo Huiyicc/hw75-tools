@@ -78,63 +78,31 @@ namespace Lib {
 		usb::comm::MessageH2D message;
 		message.set_action(usb::comm::Action::VERSION);
 		usb::comm::Nop *nop = message.mutable_nop();
+		// 发送消息
+		int result_code = sendMessage(device, message);
 
-		std::string message_str;
-		google::protobuf::io::StringOutputStream stringOutput(&message_str);
-		writeDelimitedH2D(message, &stringOutput);
-
-		for (size_t i = 0; i <= message_str.size(); i += USB_COMM_PAYLOAD_SIZE) {
-			size_t end = std::min(i + USB_COMM_PAYLOAD_SIZE, message_str.size());
-			std::vector<unsigned char> buf(message_str.begin() + i, message_str.begin() + end);
-			std::vector<unsigned char> out(HID_COMM_REPORT_COUNT, 0);
-			out[0] = 1;
-			out[1] = buf.size();
-			std::copy(buf.begin(), buf.end(), out.begin() + 2);
-			// 将字节流发送到USB设备
-			int result_code = hid_write(device, reinterpret_cast<const unsigned char *>(out.data()),
-			                            out.size());
-			if (result_code < 0) {
-				auto err = hid_error(device);
-				// 处理发送失败的情况
-				throw DeviceException(err);
-			}
-			// 读取USB设备返回的字节流
-			std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
-			result_code = hid_read(device, data.get(), result_code);
-			if (result_code < 0) {
-				auto err = hid_error(device);
-				// 处理发送失败的情况
-				throw DeviceException(err);
-			}
-			// 处理返回的字节流
-			usb::comm::MessageD2H message;
-			//第一个字节删除,第二个字节为数据长度
-			int lents = data.get()[1];
-			if (lents == USB_COMM_PAYLOAD_SIZE) {
-				throw DeviceException(L"data lens is to long.");
-			}
-			// 根据长度写入流
-			google::protobuf::io::ArrayInputStream arrayInput((void *) ((long long) (&data.get()[2])), lents);
-			// 解码字节流
-			readDelimitedD2H(&arrayInput, &message);
-			if (!message.has_version()) {
-				throw DeviceException(L"message has no version.");
-			}
-			result.ZephyrVersion = QString::fromStdString(message.version().zephyr_version());
-			result.ZmkVersion = QString::fromStdString(message.version().zmk_version());
-			result.AppVersion = QString::fromStdString(message.version().app_version());
-			result.Features.Rgb = message.version().features().rgb();
-			result.Features.Eink = message.version().features().eink();
-			result.Features.Knob = message.version().features().knob();
-			result.Features.KnobPrefs = message.version().features().knob_prefs();
-			result.Features.RgbFullControl = message.version().features().rgb_full_control();
-			result.Features.RgbIndicator = message.version().features().rgb_indicator();
-			return result;
+		// 读取USB设备返回的字节流
+		std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
+		// 处理返回的字节流
+		usb::comm::MessageD2H messageD2H;
+		readMessage(device, messageD2H, result_code);
+		// 判断返回的消息是否为版本消息
+		if (!messageD2H.has_version()) {
+			throw DeviceException(L"message has no version.");
 		}
-
+		result.ZephyrVersion = QString::fromStdString(messageD2H.version().zephyr_version());
+		result.ZmkVersion = QString::fromStdString(messageD2H.version().zmk_version());
+		result.AppVersion = QString::fromStdString(messageD2H.version().app_version());
+		result.Features.Rgb = messageD2H.version().features().rgb();
+		result.Features.Eink = messageD2H.version().features().eink();
+		result.Features.Knob = messageD2H.version().features().knob();
+		result.Features.KnobPrefs = messageD2H.version().features().knob_prefs();
+		result.Features.RgbFullControl = messageD2H.version().features().rgb_full_control();
+		result.Features.RgbIndicator = messageD2H.version().features().rgb_indicator();
 		// 关闭设备
 		hid_close(device);
 		return result;
+
 	};
 
 	void HWDeviceTools::SetDynamicScerrn(HWDevice &devices, QByteArray &imageArrar) {
@@ -149,8 +117,37 @@ namespace Lib {
 		usb::comm::EinkImage *einkImage = message.mutable_eink_image();
 		einkImage->set_id(Lib::RandomNumber(0, 1000));
 		//einkImage->set_bits_length(imageArrar.size());
-		einkImage->set_bits(imageArrar.data(),imageArrar.size());
+		einkImage->set_bits(imageArrar.data(), imageArrar.size());
+		sendMessage(device, message);
 
+		// 关闭设备
+		hid_close(device);
+
+	};
+
+	int HWDeviceTools::readMessage(hid_device_ *dev, usb::comm::MessageD2H &message,int messageSize) {
+// 读取USB设备返回的字节流
+		std::shared_ptr<uint8_t> data(new uint8_t[messageSize]);
+
+		messageSize = hid_read(dev, data.get(), messageSize);
+		if (messageSize < 0) {
+			auto err = hid_error(dev);
+			// 处理发送失败的情况
+			throw DeviceException(err);
+		}
+		//第一个字节删除,第二个字节为数据长度
+		int lents = data.get()[1];
+		if (lents == USB_COMM_PAYLOAD_SIZE) {
+			throw DeviceException(L"data lens is to long.");
+		}
+		// 根据长度写入流
+		google::protobuf::io::ArrayInputStream arrayInput((void *) ((long long) (&data.get()[2])), lents);
+		// 解码字节流
+		readDelimitedD2H(&arrayInput, &message);
+	};
+
+	int HWDeviceTools::sendMessage(hid_device_ *dev, usb::comm::MessageH2D &message) {
+		int result = 0;
 		//序列化消息
 		std::string message_str;
 		google::protobuf::io::StringOutputStream stringOutput(&message_str);
@@ -166,19 +163,16 @@ namespace Lib {
 			out[1] = buf.size();
 			std::copy(buf.begin(), buf.end(), out.begin() + 2);
 			// 将字节流发送到USB设备
-			int result_code = hid_write(device, reinterpret_cast<const unsigned char *>(out.data()),
+			int result_code = hid_write(dev, reinterpret_cast<const unsigned char *>(out.data()),
 			                            out.size());
-			std::cout<<result_code<<std::endl;
 			if (result_code < 0) {
-				auto err = hid_error(device);
+				auto err = hid_error(dev);
 				// 处理发送失败的情况
 				throw DeviceException(err);
 			}
+			result = result_code;
 		}
-
-		// 关闭设备
-		hid_close(device);
-
+		return result;
 	};
 
 	void HWDeviceTools::readDelimitedD2H(google::protobuf::io::ZeroCopyInputStream *rawInput,

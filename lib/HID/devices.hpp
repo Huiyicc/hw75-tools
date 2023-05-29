@@ -110,7 +110,7 @@ namespace Lib {
 		/** 设置扩展模块的屏幕
 		 * 注意: 屏幕尺寸只有296*128, 且只能显示黑白,输入图像注意处理
 		 * */
-		void SetDynamicScerrn(HWDevice &devices,QByteArray &imageArrar);
+		void SetDynamicScerrn(HWDevice &devices, QByteArray &imageArrar);
 
 	private:
 		constexpr static int HWVID = 0x1d50;
@@ -118,6 +118,9 @@ namespace Lib {
 		constexpr static int USB_COMM_USAGE_PAGE = 0xff14;
 		constexpr static int HID_COMM_REPORT_COUNT = 64;
 		constexpr static int USB_COMM_PAYLOAD_SIZE = HID_COMM_REPORT_COUNT - 2;
+
+		int sendMessage(hid_device_ *dev, usb::comm::MessageH2D &message);
+		int readMessage(hid_device_ *dev, usb::comm::MessageD2H &message,int messageSize);
 
 		void readDelimitedD2H(google::protobuf::io::ZeroCopyInputStream *rawInput,
 		                      usb::comm::MessageD2H *message);
