@@ -18,6 +18,7 @@
 #include "protobuf/usb_comm.pb.h"
 #include "protobuf/uart_comm.pb.h"
 #include "image/Image.hpp"
+#include "nlohmann/json.hpp"
 
 inline std::vector<uint8_t> unhexlify(const std::string &hex_string) {
 	std::vector<uint8_t> bytes;
@@ -58,6 +59,19 @@ namespace Lib {
 
 		/** 序列号 */
 		QString SerialNumber;
+
+		nlohmann::json toJson() {
+			return {
+					{"path", Path.toStdString()},
+					{"vendor_id", VendorId},
+					{"product_id", ProductId},
+					{"product_name", ProductName.toStdString()},
+					{"interface_number", InterfaceNumber},
+					{"usage", Usage},
+					{"usage_page", UsagePage},
+					{"serial_number", SerialNumber.toStdString()}
+			};
+		}
 	};
 
 	struct HWDeviceDynamicFeatures {

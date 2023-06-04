@@ -144,6 +144,7 @@ namespace Lib {
 		google::protobuf::io::ArrayInputStream arrayInput((void *) ((long long) (&data.get()[2])), lents);
 		// 解码字节流
 		readDelimitedD2H(&arrayInput, &message);
+		return messageSize;
 	};
 
 	int HWDeviceTools::sendMessage(hid_device_ *dev, usb::comm::MessageH2D &message) {

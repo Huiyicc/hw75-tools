@@ -361,16 +361,6 @@
            </widget>
           </widget>
          </widget>
-         <widget class="QWidget" name="tab_4">
-          <attribute name="title">
-           <string>插件</string>
-          </attribute>
-         </widget>
-         <widget class="QWidget" name="tab_5">
-          <attribute name="title">
-           <string>接口</string>
-          </attribute>
-         </widget>
         </widget>
        </widget>
        <widget class="QWidget" name="motor">
@@ -380,6 +370,16 @@
        </widget>
       </widget>
      </widget>
+    </widget>
+    <widget class="QWidget" name="tab_4">
+     <attribute name="title">
+      <string>插件</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_5">
+     <attribute name="title">
+      <string>HTTPAPI</string>
+     </attribute>
     </widget>
    </widget>
   </widget>

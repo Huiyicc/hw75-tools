@@ -4,6 +4,8 @@
 #include "HID/devices.hpp"
 #include "image/Image.hpp"
 #include <QMainWindow>
+#include "http/httplib.h"
+#include "core/config.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -42,6 +44,12 @@ private:
 
 	// 更新用户自行选择图像的预览
 	void updateUserPreviewImage();
+
+private:
+	void httphander();
+
+	void httphanderGetDynamiclist(const httplib::Request &, httplib::Response &);
+	void httphanderGetDynamic(const httplib::Request &, httplib::Response &);
 
 };
 

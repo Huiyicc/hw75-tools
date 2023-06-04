@@ -14,6 +14,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::eventRegister() {
+	httphander();
 	connect(ui->comboBox_motor_equipment, QOverload<int>::of(&QComboBox::currentIndexChanged),
 	        this, &MainWindow::eventByDynamicComboxUpdateTable);
 	connect(ui->elink_switch_image, &QPushButton::clicked, this, &MainWindow::eventByElinkSwitchImage);
