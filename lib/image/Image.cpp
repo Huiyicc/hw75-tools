@@ -3,7 +3,7 @@
 //
 
 #include "Image.hpp"
-
+#include <iostream>
 
 namespace Lib {
 	Image::Image() : Image(128, 296) {}
@@ -19,6 +19,17 @@ namespace Lib {
 	Image::Image(const QString &path) {
 		m_image = std::make_shared<QImage>(path);
 	}
+
+	Image::Image(const QImage &img){
+		m_image = std::make_shared<QImage>(img);
+	};
+
+	Image& Image::LoadToQStringByte(const QString&data) {
+		QByteArray imageData = data.toUtf8(); // 将QString转换为UTF-8编码的QByteArray
+		QImage image = QImage::fromData(imageData);
+		std::cout<<image.size().width()<<std::endl;
+		return *this;
+	};
 
 	std::shared_ptr<QImage> Image::GetImage() {
 		return m_image;

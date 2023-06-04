@@ -102,7 +102,6 @@ void MainWindow::eventByPushImage(bool checked) {
 
 		tools.SetDynamicScerrn(m_devices, *m_userPushImage->BinaryImgDataToBits(ui->threshold_progress_horizontalSlider->value()));
 
-
 	}catch (Lib::DeviceException &e) {
 		QMessageBox::critical(this, "错误", QString::fromStdString(e.what()));
 		return;

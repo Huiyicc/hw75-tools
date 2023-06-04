@@ -18,6 +18,7 @@ namespace Lib {
 		Image(int weight, int height);
 
 		Image(const QString &path);
+		Image(const QImage &img);
 
 		~Image();
 
@@ -26,6 +27,7 @@ namespace Lib {
 		/** 用于计算图像用于二值化时最大的可选阈值 */
 		int GetMaximumThreshold();
 
+		Image& LoadToQStringByte(const QString&data);
 		std::shared_ptr<QImage> GetBinaryImgData(int threshold = 50);
 
 		std::shared_ptr<QByteArray> ToBits();

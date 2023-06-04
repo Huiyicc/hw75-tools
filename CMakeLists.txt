@@ -12,8 +12,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-find_package(libconfig REQUIRED)
-
 include_directories( . )
 include_directories( ./lib )
 file(GLOB CORE_SOURCES core/*.cpp)
@@ -67,8 +65,6 @@ elseif(CMAKE_HOST_WIN32)
     # windows独有库
     target_link_libraries(hw_tools PRIVATE -lws2_32)
 endif()
-
-
 
 
 set_target_properties(hw_tools PROPERTIES

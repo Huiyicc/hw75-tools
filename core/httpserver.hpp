@@ -34,7 +34,7 @@ namespace core {
 
 		void CallBackClear();
 
-		static void SuccessResponst(httplib::Response &resp, nlohmann::json &data);
+		static void SuccessResponst(httplib::Response &resp, const nlohmann::json &data = nullptr);
 
 		static void FailResponst(httplib::Response &resp, int code, const std::string &msg);
 

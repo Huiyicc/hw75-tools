@@ -88,6 +88,21 @@ namespace Lib {
 		QString ZmkVersion;
 		QString ZephyrVersion;
 		HWDeviceDynamicFeatures Features;
+		nlohmann::json toJson() {
+			return {
+					{"app_version", AppVersion.toStdString()},
+					{"zmk_version", ZmkVersion.toStdString()},
+					{"zephyr_version", ZephyrVersion.toStdString()},
+					{"features", {
+						{"rgb", Features.Rgb},
+						{"eink", Features.Eink},
+						{"knob", Features.Knob},
+						{"knob_prefs", Features.KnobPrefs},
+						{"rgb_full_control", Features.RgbFullControl},
+						{"rgb_indicator", Features.RgbIndicator}
+					}}
+			};
+		}
 	};
 
 
@@ -125,6 +140,7 @@ namespace Lib {
 		 * 注意: 屏幕尺寸只有296*128, 且只能显示黑白,输入图像注意处理
 		 * */
 		void SetDynamicScerrn(HWDevice &devices, QByteArray &imageArrar);
+		void SetDynamicScerrn(const QString &devicesPath, QByteArray &imageArrar);
 
 	private:
 		constexpr static int HWVID = 0x1d50;

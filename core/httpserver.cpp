@@ -41,7 +41,7 @@ namespace core {
 		return m_port;
 	}
 
-	void httpserver::SuccessResponst(httplib::Response &resp, nlohmann::json &data) {
+	void httpserver::SuccessResponst(httplib::Response &resp,const nlohmann::json &data) {
 		nlohmann::json respData;
 		respData["code"]=0;
 		respData["msg"]="success";

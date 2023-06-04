@@ -50,6 +50,7 @@ private:
 
 	void httphanderGetDynamiclist(const httplib::Request &, httplib::Response &);
 	void httphanderGetDynamic(const httplib::Request &, httplib::Response &);
+	void httphanderElinkPush(const httplib::Request &, httplib::Response &);
 
 };
 

@@ -106,8 +106,11 @@ namespace Lib {
 	};
 
 	void HWDeviceTools::SetDynamicScerrn(HWDevice &devices, QByteArray &imageArrar) {
+		SetDynamicScerrn(devices.Path,imageArrar);
+	};
+	void HWDeviceTools::SetDynamicScerrn(const QString &devicesPath, QByteArray &imageArrar) {
 		HWDeviceDynamicVersion result;
-		auto device = hid_open_path(devices.Path.toStdString().c_str());
+		auto device = hid_open_path(devicesPath.toStdString().c_str());
 		if (!device) {
 			throw DeviceException(hid_error(nullptr));
 		}
