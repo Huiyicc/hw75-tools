@@ -40,25 +40,17 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
             MANUAL_FINALIZATION
             ${PROJECT_SOURCES}
             )
-    # Define target properties for Android with Qt 6 as:
-    #    set_property(TARGET hw_tools APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-    #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-    # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
-    if(ANDROID)
-        add_library(hw_tools SHARED
-                ${PROJECT_SOURCES}
-                )
-        # Define properties for Android with Qt 5 after find_package() calls as:
-        #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-    else()
-        add_executable(hw_tools
-                ${PROJECT_SOURCES}
-                )
-    endif()
+    add_executable(hw_tools
+            ${PROJECT_SOURCES}
+            )
 endif()
 
-target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi -lprotobuf -lpthread)
+# target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi -lprotobuf -lpthread)
+
+target_link_libraries(hw_tools PUBLIC Qt${QT_VERSION_MAJOR}::Widgets -lhidapi -lprotobuf -lpthread)
+
+
 if(CMAKE_HOST_UNIX)
     # linux独有库
 elseif(CMAKE_HOST_WIN32)
