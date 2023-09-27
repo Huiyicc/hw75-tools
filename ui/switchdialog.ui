@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SwitchDialog</class>
+ <widget class="QDialog" name="SwitchDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>323</width>
+    <height>194</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(255, 255, 255);
+border-radius:20px;</string>
+  </property>
+  <widget class="QFrame" name="frame">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>323</width>
+     <height>194</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(255, 255, 255);
+border-radius:15px;</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>283</x>
+      <y>10</y>
+      <width>22</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: rgb(230,230,230);
+	border-radius:11px;
+    color: rgb(154,154,154);
+}
+QPushButton:hover {
+    background-color: rgb(204,204,204);
+}
+QPushButton:pressed {
+    background-color: rgba(204,204,204,0.6);
+}
+QPushButton:focus {
+    outline: none;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="../res.qrc">
+      <normaloff>:/res/default/sys_close.png</normaloff>:/res/default/sys_close.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>12</width>
+      <height>12</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>7</y>
+      <width>61</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color:#5c5c5c;</string>
+    </property>
+    <property name="text">
+     <string>连接设备</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>122</x>
+      <y>130</y>
+      <width>75</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+color: rgba(255,255,255,0.9);
+border-radius: 14px;
+border: none;</string>
+    </property>
+    <property name="text">
+     <string>确  定</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>65</x>
+      <y>70</y>
+      <width>191</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#comboBox {
+    font-family: 微软雅黑;
+    font-size: 12px;
+    color: rgb(75, 75, 75);
+    border-color: #c8c8c8;
+    border-width: 0.5 0.5 0.5 0.5;
+    border-radius: 3px;
+    padding-left: 12px;
+    background: rgb(230, 230, 230);
+}
+#comboBox::drop-down {
+    margin-right: 10px;
+    border: none;
+}
+#comboBox::down-arrow {
+    width: 12px;
+    height: 12px;
+	margin-top: 2px;
+	margin-right: 20px;
+    border-image: url(://res/default/down.png);
+}
+#comboBox QAbstractItemView {
+	border-radius: 3px;
+    font-family: 微软雅黑;
+    font-size: 12px;
+    padding: 5px;
+    background-color: rgb(230, 230, 230);
+}
+#comboBox QAbstractItemView::item {
+    height: 27px;
+}
+#comboBox QAbstractItemView::item:selected {
+    background: rgba(0, 0, 0, 3%);
+    color: rgb(75, 75, 75);
+}
+</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../res.qrc"/>
+ </resources>
+ <connections/>
+</ui>

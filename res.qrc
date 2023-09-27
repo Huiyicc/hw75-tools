@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/default/sys_down.png</file>
+        <file>res/default/sys_left.png</file>
+        <file>res/default/sys_right.png</file>
+        <file>res/default/sys_close.png</file>
+        <file>res/default/down.png</file>
+    </qresource>
+</RCC>

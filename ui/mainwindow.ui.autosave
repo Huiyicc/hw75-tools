@@ -598,7 +598,7 @@ color:rgb(138, 144, 176);</string>
            <string notr="true">
 QPushButton{
 background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
-color: rgb(211, 216, 237);
+color: rgb(230, 232, 242);
 border-radius: 15px;
 border: none;
 }

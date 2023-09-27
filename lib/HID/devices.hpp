@@ -15,8 +15,7 @@
 #include <algorithm>
 #include <fstream>
 #include <QMetaType>
-#include "protobuf/usb_comm.pb.h"
-#include "protobuf/uart_comm.pb.h"
+#include "protobuf/hid_msg.pb.h"
 #include "image/Image.hpp"
 #include "nlohmann/json.hpp"
 
@@ -84,16 +83,16 @@ namespace Lib {
 	};
 
 	struct HWDeviceDynamicVersion {
-		QString AppVersion;
-		QString ZmkVersion;
-		QString ZephyrVersion;
+		QString GitHash;
+		QString GitBranch;
+		QString GitVersion;
 		HWDeviceDynamicFeatures Features;
 		nlohmann::json toJson() {
 			return {
-					{"app_version", AppVersion.toStdString()},
-					{"zmk_version", ZmkVersion.toStdString()},
-					{"zephyr_version", ZephyrVersion.toStdString()},
-					{"features", {
+					{"git_version", GitVersion.toStdString()},
+					{"git_bash",    GitBranch.toStdString()},
+					{"git_hash",    GitHash.toStdString()},
+					{"features",    {
 						{"rgb", Features.Rgb},
 						{"eink", Features.Eink},
 						{"knob", Features.Knob},
@@ -139,27 +138,36 @@ namespace Lib {
 		/** 设置扩展模块的屏幕
 		 * 注意: 屏幕尺寸只有296*128, 且只能显示黑白,输入图像注意处理
 		 * */
-		void SetDynamicScerrn(HWDevice &devices, QByteArray &imageArrar);
-		void SetDynamicScerrn(const QString &devicesPath, QByteArray &imageArrar);
+		void SetDynamicScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar);
+		void SetDynamicScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar);
+
+        void DebugSetKnob(const QString &devicesPath,float torque,
+                          float ap,float ai,float ad,
+                          float vp,float vi,float vd);
+
+        void DebugSetDeskTopEsing(const QString &devicesPath,int type);
 
 	private:
-		constexpr static int HWVID = 0x1d50;
-		constexpr static int HWPID = 0x615e;
-		constexpr static int USB_COMM_USAGE_PAGE = 0xff14;
-		constexpr static int HID_COMM_REPORT_COUNT = 64;
-		constexpr static int USB_COMM_PAYLOAD_SIZE = HID_COMM_REPORT_COUNT - 2;
+		constexpr static int HWVID = 0xdc00;
+		constexpr static int HWPID = 0x5750;
+		constexpr static int USB_USAGE_PAGE = 0x8c;
+		constexpr static int HID_REPORT_COUNT = 64;
+		constexpr static int HID_PAYLOAD_SIZE = HID_REPORT_COUNT - 3;
 
-		int sendMessage(hid_device_ *dev, usb::comm::MessageH2D &message);
-		int readMessage(hid_device_ *dev, usb::comm::MessageD2H &message,int messageSize);
+		int sendMessage(hid_device_ *dev, hid::msg::PcMessage &message);
+		int readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message,int messageSize);
 
-		void readDelimitedD2H(google::protobuf::io::ZeroCopyInputStream *rawInput,
-		                      usb::comm::MessageD2H *message);
+        void readDelimitedD2P(google::protobuf::io::ZeroCopyInputStream *rawInput,
+                                             hid::msg::CtrlMessage *message);
 
-		void writeDelimitedH2D(const usb::comm::MessageH2D &message,
-		                       google::protobuf::io::ZeroCopyOutputStream *rawOutput);
+		void writeDelimitedP2D(const hid::msg::PcMessage &message,
+                               google::protobuf::io::ZeroCopyOutputStream *rawOutput,
+                               google::protobuf::io::ZeroCopyOutputStream *sizeOutput = nullptr);
 
 	};
 
 }
+
+Q_DECLARE_METATYPE(Lib::HWDevice);
 
 #endif //HW_TOOLS_DEVICES_HPP

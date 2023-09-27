@@ -1,31 +1,29 @@
-#include <QApplication>
-#include <QMessageBox>
 #include "ui/mainwindow.h"
-#include "core/config.hpp"
-#include "core/httpserver.hpp"
 
-void initFunc(){
-	try {
-		auto conf = core::config::Instance();
-		bool ifs = conf.GetValue<bool>(core::config::HTTPAPI_ENABLE, false);
-		if (ifs) {
-			int port = conf.GetValue<int>(core::config::HTTPAPI_PORT, 17980);
-			auto httpsvr = core::httpserver::Instance();
-			httpsvr.Port(port);
-			httpsvr.Start();
-		}
-	}catch (std::exception &e){
-		std::cout<<e.what()<<std::endl;
-		QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
-		exit(-1);
-	}
-}
+#include <QApplication>
+#include <QLocale>
+#include <QTranslator>
+#include <QMessageBox>
 
 int main(int argc, char *argv[]) {
-	QApplication a(argc, argv);
-	initFunc();
-	MainWindow w;
-	w.setFixedSize(1186, 666);
-	w.show();
-	return a.exec();
+    QApplication a(argc, argv);
+    MainWindow w;
+    try {
+        QTranslator translator;
+        const QStringList uiLanguages = QLocale::system().uiLanguages();
+        for (const QString &locale: uiLanguages) {
+            const QString baseName = "hw_tools_" + QLocale(locale).name();
+            if (translator.load(":/i18n/" + baseName)) {
+                a.installTranslator(&translator);
+                break;
+            }
+        }
+        w.show();
+    } catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+        QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
+        exit(-1);
+    }
+
+    return a.exec();
 }

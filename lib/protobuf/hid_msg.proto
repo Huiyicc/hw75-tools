@@ -1,0 +1,92 @@
+// 下位机:nanopb
+
+syntax = "proto2";
+
+package hid.msg;
+
+// 消息ID
+enum MessageId {
+  // 获取版本
+  VERSION = 1;
+  // 获取配置
+  MOTOR_GET_CONFIG = 2;
+  // 设置水墨屏
+  EINK_SET_IMAGE = 3;
+  // 保留字段
+  DEV_UTILS = 4;
+  // 设置电机信息
+  MOTOR_SET_CONFIG = 5;
+}
+
+// 扩展发来的消息
+message CtrlMessage {
+  required MessageId id = 1;
+  oneof payload {
+    Nil nil = 2;
+    Version version = 3;
+  }
+}
+
+// 上位机发来的消息
+message PcMessage {
+  required MessageId id = 1;
+  oneof payload {
+    Nil nil = 2;
+    Utils utils = 3;
+    Eink eink = 4;
+    knob knob = 5;
+  }
+}
+
+message Nil {}
+
+// 版本号消息
+message Version {
+  // git版本号
+  required string GitVer = 1;
+  // githash
+  required string GitHash = 2;
+  // git分支
+  required string GitBranch = 3;
+}
+
+message Eink {
+  required uint32 bits_size = 1;
+  required string bits = 2;
+}
+
+message knob {
+  required knobMessage id = 1;
+  required uint32 knobModel = 2;
+  required Utils utils = 3;
+  oneof payload {
+    knobPID pid = 4;
+  }
+}
+
+message Utils {
+  required uint32 id = 1;
+  required uint32 uData = 2;
+  required float fData = 3;
+}
+
+enum knobMessage {
+  // 设置PID
+  SetPID = 1;
+}
+
+message knobPID {
+  message Velocity {
+    required float p = 1;
+    required float i = 2;
+    required float d = 3;
+  }
+  message Angle {
+    required float p = 1;
+    required float i = 2;
+    required float d = 3;
+  }
+  required Velocity velocity = 4;
+  required Angle angle = 5;
+}
+

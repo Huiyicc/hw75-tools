@@ -1,8 +1,4 @@
 /cmake-build-debug/
-/.idea/codeStyles/codeStyleConfig.xml
-/.idea/.gitignore
-/.idea/hw_tools.iml
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/qmlSettings.xml
-/.idea/vcs.xml
+/.idea/
+/cmake-build-release/
+

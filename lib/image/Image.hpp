@@ -4,7 +4,7 @@
 
 #ifndef HW_TOOLS_IMAGE_HPP
 #define HW_TOOLS_IMAGE_HPP
-
+#include <memory>
 #include <QImage>
 #include <QColor>
 
@@ -31,7 +31,7 @@ namespace Lib {
 		std::shared_ptr<QImage> GetBinaryImgData(int threshold = 50);
 
 		std::shared_ptr<QByteArray> ToBits();
-		std::shared_ptr<QByteArray> BinaryImgDataToBits(int threshold = 50);
+		std::shared_ptr<std::vector<unsigned char>> BinaryImgDataToBits(int threshold = 50);
 
 	private:
 		std::shared_ptr<QImage> m_image = nullptr;
