@@ -131,11 +131,23 @@ HWDeviceDynamicVersion HWDeviceTools::GetDynamicVersion(HWDevice &devices) {
 
 };
 
-void HWDeviceTools::SetDynamicScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar) {
-    SetDynamicScerrn(devices.Path, imageArrar);
+void HWDeviceTools::SetDynamicEinkScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar) {
+    SetDynamicEinkScerrn(devices.Path, imageArrar);
 };
 
-void HWDeviceTools::SetDynamicScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar) {
+void HWDeviceTools::SetDynamicEinkScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar) {
+    SetDynamicScerrn(2, devicesPath, imageArrar);
+};
+
+void HWDeviceTools::SetDynamicOLEDScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar) {
+    SetDynamicOLEDScerrn(devices.Path, imageArrar);
+}
+
+void HWDeviceTools::SetDynamicOLEDScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar) {
+    SetDynamicScerrn(3, devicesPath, imageArrar);
+}
+
+void HWDeviceTools::SetDynamicScerrn(int id,const QString &devicesPath, std::vector<unsigned char> &imageArrar) {
     send_mutex.lock();
     HWDeviceDynamicVersion result;
     auto device = hid_open_path(devicesPath.toStdString().c_str());
@@ -143,12 +155,10 @@ void HWDeviceTools::SetDynamicScerrn(const QString &devicesPath, std::vector<uns
         send_mutex.unlock();
         throw DeviceException(hid_error(nullptr));
     }
-
-    //imageArrar.clear();
-    //imageArrar.insert(imageArrar.begin(), gImage_1, gImage_1 + (296 * 128 / 8));
+    auto aaa = imageArrar.data();
     std::vector<std::vector<unsigned char>> messageDatas;
     if (imageArrar.size() > HID_PAYLOAD_SIZE) {
-        // 切分消息
+    // 切分消息
         size_t chunkSize = 61;
         size_t dataSize = imageArrar.size();
         size_t currentIndex = 0;
@@ -163,7 +173,7 @@ void HWDeviceTools::SetDynamicScerrn(const QString &devicesPath, std::vector<uns
                 chunk.insert(chunk.end(), scount, 0);
             }
             chunk[0] = 0x4;
-            chunk[1] = ((currentIndex + chunkSize) < dataSize) ? 2 : 0;
+            chunk[1] = ((currentIndex + chunkSize) < dataSize) ? id : 0;
             chunk[2] = chunkSizeToCopy + 1;
             messageDatas.push_back(chunk);
             currentIndex += chunkSizeToCopy;
@@ -207,7 +217,7 @@ void HWDeviceTools::SetDynamicScerrn(const QString &devicesPath, std::vector<uns
     // 关闭设备
     hid_close(device);
     send_mutex.unlock();
-};
+}
 
 int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize) {
     // 读取USB设备返回的字节流

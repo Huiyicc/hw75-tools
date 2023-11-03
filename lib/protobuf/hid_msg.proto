@@ -23,7 +23,7 @@ message CtrlMessage {
   required MessageId id = 1;
   oneof payload {
     Nil nil = 2;
-    Version version = 3;
+    version version = 3;
   }
 }
 
@@ -41,7 +41,7 @@ message PcMessage {
 message Nil {}
 
 // 版本号消息
-message Version {
+message version {
   // git版本号
   required string GitVer = 1;
   // githash

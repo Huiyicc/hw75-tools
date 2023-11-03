@@ -1,7 +1,7 @@
 #include <QGraphicsDropShadowEffect>
 #include "switchdialog.h"
 #include "ui_switchdialog.h"
-#include "vComboBox.h"
+#include "widget/vComboBox.h"
 #include <QMouseEvent>
 #include <QLayout>
 #include <QListView>
@@ -59,7 +59,7 @@ SwitchDialog::~SwitchDialog() {
 
 void SwitchDialog::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
-    QPoint y = event->globalPos();
+    QPoint y = event->globalPosition().toPoint();
     QPoint x = y - z;
     this->move(x);
 }
@@ -67,7 +67,7 @@ void SwitchDialog::mouseMoveEvent(QMouseEvent *event) {
 void SwitchDialog::mousePressEvent(QMouseEvent *event) {
     QWidget::mousePressEvent(event);
     QPoint x = this->geometry().topLeft();
-    QPoint y = event->globalPos();
+    QPoint y = event->globalPosition().toPoint();
     z = y - x;
 }
 

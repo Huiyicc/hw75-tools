@@ -20,151 +20,163 @@
 #include "nlohmann/json.hpp"
 
 inline std::vector<uint8_t> unhexlify(const std::string &hex_string) {
-	std::vector<uint8_t> bytes;
+    std::vector<uint8_t> bytes;
 
-	for (size_t i = 0; i < hex_string.length(); i += 2) {
-		std::string byteString = hex_string.substr(i, 2);
-		uint8_t byte = static_cast<uint8_t>(std::stoi(byteString, nullptr, 16));
-		bytes.push_back(byte);
-	}
+    for (size_t i = 0; i < hex_string.length(); i += 2) {
+        std::string byteString = hex_string.substr(i, 2);
+        uint8_t byte = static_cast<uint8_t>(std::stoi(byteString, nullptr, 16));
+        bytes.push_back(byte);
+    }
 
-	return bytes;
+    return bytes;
 }
 
 
 namespace Lib {
 
-	struct HWDevice {
-		/** 设备路径 */
-		QString Path;
+struct HWDevice {
+    /** 设备路径 */
+    QString Path;
 
-		/** 设备ID */
-		unsigned short VendorId = 0;
+    /** 设备ID */
+    unsigned short VendorId = 0;
 
-		/** 产品ID */
-		unsigned short ProductId = 0;
+    /** 产品ID */
+    unsigned short ProductId = 0;
 
-		/** 设备名称 */
-		QString ProductName;
+    /** 设备名称 */
+    QString ProductName;
 
-		/** 这是一个表示逻辑设备的USB接口。仅当该设备为USB HID设备时有效。在其他情况下设为-1。 */
-		int InterfaceNumber = 0;
+    /** 这是一个表示逻辑设备的USB接口。仅当该设备为USB HID设备时有效。在其他情况下设为-1。 */
+    int InterfaceNumber = 0;
 
-		/** 这个设备/接口的用法。 */
-		unsigned short Usage = 0;
+    /** 这个设备/接口的用法。 */
+    unsigned short Usage = 0;
 
-		/** 使用页 */
-		unsigned short UsagePage = 0;
+    /** 使用页 */
+    unsigned short UsagePage = 0;
 
-		/** 序列号 */
-		QString SerialNumber;
+    /** 序列号 */
+    QString SerialNumber;
 
-		nlohmann::json toJson() {
-			return {
-					{"path", Path.toStdString()},
-					{"vendor_id", VendorId},
-					{"product_id", ProductId},
-					{"product_name", ProductName.toStdString()},
-					{"interface_number", InterfaceNumber},
-					{"usage", Usage},
-					{"usage_page", UsagePage},
-					{"serial_number", SerialNumber.toStdString()}
-			};
-		}
-	};
+    nlohmann::json toJson() {
+        return {
+                {"path",             Path.toStdString()},
+                {"vendor_id",        VendorId},
+                {"product_id",       ProductId},
+                {"product_name",     ProductName.toStdString()},
+                {"interface_number", InterfaceNumber},
+                {"usage",            Usage},
+                {"usage_page",       UsagePage},
+                {"serial_number",    SerialNumber.toStdString()}
+        };
+    }
+};
 
-	struct HWDeviceDynamicFeatures {
-		bool Rgb = false;
-		bool Eink = false;
-		bool Knob = false;
-		bool KnobPrefs = false;
-		bool RgbFullControl = false;
-		bool RgbIndicator = false;
-	};
+struct HWDeviceDynamicFeatures {
+    bool Rgb = false;
+    bool Eink = false;
+    bool Knob = false;
+    bool KnobPrefs = false;
+    bool RgbFullControl = false;
+    bool RgbIndicator = false;
+};
 
-	struct HWDeviceDynamicVersion {
-		QString GitHash;
-		QString GitBranch;
-		QString GitVersion;
-		HWDeviceDynamicFeatures Features;
-		nlohmann::json toJson() {
-			return {
-					{"git_version", GitVersion.toStdString()},
-					{"git_bash",    GitBranch.toStdString()},
-					{"git_hash",    GitHash.toStdString()},
-					{"features",    {
-						{"rgb", Features.Rgb},
-						{"eink", Features.Eink},
-						{"knob", Features.Knob},
-						{"knob_prefs", Features.KnobPrefs},
-						{"rgb_full_control", Features.RgbFullControl},
-						{"rgb_indicator", Features.RgbIndicator}
-					}}
-			};
-		}
-	};
+struct HWDeviceDynamicVersion {
+    QString GitHash;
+    QString GitBranch;
+    QString GitVersion;
+    HWDeviceDynamicFeatures Features;
+
+    nlohmann::json toJson() {
+        return {
+                {"git_version", GitVersion.toStdString()},
+                {"git_bash",    GitBranch.toStdString()},
+                {"git_hash",    GitHash.toStdString()},
+                {"features",    {
+                                        {"rgb", Features.Rgb},
+                                        {"eink", Features.Eink},
+                                        {"knob", Features.Knob},
+                                        {"knob_prefs", Features.KnobPrefs},
+                                        {"rgb_full_control", Features.RgbFullControl},
+                                        {"rgb_indicator", Features.RgbIndicator}
+                                }}
+        };
+    }
+};
 
 
-	// USB设备管理器的错误类
-	class DeviceException : public std::runtime_error {
-	public:
-		explicit DeviceException(const std::wstring &message) : std::runtime_error(w2a(message.c_str())) {}
+// USB设备管理器的错误类
+class DeviceException : public std::runtime_error {
+public:
+    explicit DeviceException(const std::wstring &message) : std::runtime_error(w2a(message.c_str())) {}
 
-		explicit DeviceException(const wchar_t *message) : std::runtime_error(w2a(message)) {}
+    explicit DeviceException(const wchar_t *message) : std::runtime_error(w2a(message)) {}
 
-	private:
-		static std::string w2a(const wchar_t *str) {
-			// 将wchar_t*转换为std::string
-			std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-			return converter.to_bytes(str);
-		};
-	};
+private:
+    static std::string w2a(const wchar_t *str) {
+        // 将wchar_t*转换为std::string
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+        return converter.to_bytes(str);
+    };
+};
 
-	// 瀚文HID管理器类
-	// 所有函数都有错误处理,错误抛出 Lib::HID::DeviceException
-	// 构造时会自动初始化,注意捕获异常
-	class HWDeviceTools {
-	public:
-		HWDeviceTools();
+// 瀚文HID管理器类
+// 所有函数都有错误处理,错误抛出 Lib::HID::DeviceException
+// 构造时会自动初始化,注意捕获异常
+class HWDeviceTools {
+public:
+    HWDeviceTools();
 
-		~HWDeviceTools();
+    ~HWDeviceTools();
 
-		/** 获取瀚文设备列表(暂时只能获取扩展组件) */
-		size_t GetHWDevicesList(std::vector<HWDevice> &HWDevicesList);
+    /** 获取瀚文设备列表(暂时只能获取扩展组件) */
+    size_t GetHWDevicesList(std::vector<HWDevice> &HWDevicesList);
 
-		/** 获取扩展模块的版本号信息 */
-		HWDeviceDynamicVersion GetDynamicVersion(HWDevice &devices);
+    /** 获取扩展模块的版本号信息 */
+    HWDeviceDynamicVersion GetDynamicVersion(HWDevice &devices);
 
-		/** 设置扩展模块的屏幕
-		 * 注意: 屏幕尺寸只有296*128, 且只能显示黑白,输入图像注意处理
-		 * */
-		void SetDynamicScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar);
-		void SetDynamicScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar);
+    /** 设置扩展模块的屏幕
+     * 注意: 屏幕尺寸只有296*128, 且只能显示黑白,输入图像注意处理
+     * */
+    void SetDynamicEinkScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar);
 
-        void DebugSetKnob(const QString &devicesPath,float torque,
-                          float ap,float ai,float ad,
-                          float vp,float vi,float vd);
+    void SetDynamicEinkScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar);
 
-        void DebugSetDeskTopEsing(const QString &devicesPath,int type);
+    /** 设置扩展模块的OLED
+    * 注意: 屏幕尺寸只有32*128, 且只能显示黑白,输入图像注意处理
+     * */
+    void SetDynamicOLEDScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar);
 
-	private:
-		constexpr static int HWVID = 0xdc00;
-		constexpr static int HWPID = 0x5750;
-		constexpr static int USB_USAGE_PAGE = 0x8c;
-		constexpr static int HID_REPORT_COUNT = 64;
-		constexpr static int HID_PAYLOAD_SIZE = HID_REPORT_COUNT - 3;
+    void SetDynamicOLEDScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar);
 
-		int sendMessage(hid_device_ *dev, hid::msg::PcMessage &message);
-		int readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message,int messageSize);
+    void SetDynamicScerrn(int id, const QString &devicesPath, std::vector<unsigned char> &imageArrar);
 
-        void readDelimitedD2P(google::protobuf::io::ZeroCopyInputStream *rawInput,
-                                             hid::msg::CtrlMessage *message);
+    void DebugSetKnob(const QString &devicesPath, float torque,
+                      float ap, float ai, float ad,
+                      float vp, float vi, float vd);
 
-		void writeDelimitedP2D(const hid::msg::PcMessage &message,
-                               google::protobuf::io::ZeroCopyOutputStream *rawOutput,
-                               google::protobuf::io::ZeroCopyOutputStream *sizeOutput = nullptr);
+    void DebugSetDeskTopEsing(const QString &devicesPath, int type);
 
-	};
+private:
+    constexpr static int HWVID = 0xdc00;
+    constexpr static int HWPID = 0x5750;
+    constexpr static int USB_USAGE_PAGE = 0x8c;
+    constexpr static int HID_REPORT_COUNT = 64;
+    constexpr static int HID_PAYLOAD_SIZE = HID_REPORT_COUNT - 3;
+
+    int sendMessage(hid_device_ *dev, hid::msg::PcMessage &message);
+
+    int readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize);
+
+    void readDelimitedD2P(google::protobuf::io::ZeroCopyInputStream *rawInput,
+                          hid::msg::CtrlMessage *message);
+
+    void writeDelimitedP2D(const hid::msg::PcMessage &message,
+                           google::protobuf::io::ZeroCopyOutputStream *rawOutput,
+                           google::protobuf::io::ZeroCopyOutputStream *sizeOutput = nullptr);
+
+};
 
 }
 

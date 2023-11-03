@@ -24,10 +24,10 @@ config::config() {
     if (file.is_open()) {
         std::stringstream buffer;
         buffer << file.rdbuf();
-        m_config = nlohmann::json::parse(buffer.str());
+		m_config.Parse(nlohmann::json::parse(buffer.str()));
         file.close();
     } else {
-        m_config = nlohmann::json::object();
+        // m_config = nlohmann::json::object();
     }
 
 }
@@ -39,14 +39,14 @@ config::~config() {
 void config::saveConfig() {
     std::ofstream outFile("./config.json");
     if (outFile.is_open()) {
-        outFile << m_config.dump(4); // 使用缩进格式写入文件
+        outFile << m_config.dump();
         outFile.close();
     } else {
         // std::cerr << "Unable to open file for writing" << std::endl;
     }
 }
 
-nlohmann::json &config::getConfig() {
+config::AppConfigModel &config::getConfig() {
     return m_config;
 }
 

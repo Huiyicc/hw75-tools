@@ -45,12 +45,12 @@ std::shared_ptr<QImage> Image::GetImage() {
     return m_image;
 }
 
-std::shared_ptr<QImage> Image::GetBinaryImgData(int threshold) {
+std::shared_ptr<QImage> Image::GetBinaryImgData(int threshold, int width, int height) {
     // 检查图像尺寸
     auto sz = m_image->size();
-    if (sz.height() != 296 || sz.width() != 128) {
+    if (sz.height() != height || sz.width() != width) {
         // 缩放图像
-        QImage rimg = m_image->scaled(128, 296);
+        QImage rimg = m_image->scaled(width, height);
         std::shared_ptr<QImage> newImage = std::make_shared<QImage>(rimg);
         // 更新m_image为新的图像数据
         m_image = newImage;
@@ -110,13 +110,19 @@ std::shared_ptr<QByteArray> Image::ToBits() {
     return result;
 }
 
-std::shared_ptr<std::vector<unsigned char>> Image::BinaryImgDataToBits(int threshold) {
-    auto img = GetBinaryImgData(threshold)->mirrored(true,false);
-    img.save("target.png");
+std::shared_ptr<std::vector<unsigned char>>
+Image::BinaryImgDataToBits(int threshold, int width, int height, bool mirrored) {
+    auto lst = GetBinaryImgData(threshold, width, height);
+    QImage img;
+    if (mirrored) {
+        img = lst->mirrored(true, false);
+    } else {
+        img = *lst;
+    }
     int pixelCount = img.width() * img.height();
     std::shared_ptr<std::vector<unsigned char>> output = std::make_shared<std::vector<unsigned char>>();
-    auto count = img.size().width()*img.size().height();
-    if (count%8 != 0) {
+    auto count = img.size().width() * img.size().height();
+    if (count % 8 != 0) {
         throw std::runtime_error("图像尺寸不正确");
     }
     output->resize((pixelCount + 7) / 8);
@@ -130,5 +136,23 @@ std::shared_ptr<std::vector<unsigned char>> Image::BinaryImgDataToBits(int thres
 
     return output;
 }
+
+std::shared_ptr<std::vector<unsigned char>>
+Image::BinaryImgDataToOLEDBits(int threshold, bool mirrored, int width, int height) {
+    auto rest = BinaryImgDataToBits(threshold, width, height, mirrored);
+    // 分组排序有问题
+    // |4|3|2|1| -> |1|2|3|4|
+    auto data = rest->data();
+    for (int i = 0; i < height*width/8; i += 4) {
+        auto tmpC = data[i];
+        data[i]=data[i+3];
+        data[i+3]=tmpC;
+        tmpC = data[i+1];
+        data[i+1]=data[i+2];
+        data[i+2]=tmpC;
+    }
+    return rest;
+}
+
 
 } // Lib
