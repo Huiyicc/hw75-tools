@@ -264,7 +264,7 @@ QTabWidget::pane {
      </attribute>
      <widget class="QTabWidget" name="ctrl_tabWidget">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -316,19 +316,132 @@ QTabBar::tab:selected {
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="ctrl_tab_knob">
        <attribute name="title">
         <string>电机</string>
        </attribute>
-       <widget class="QGroupBox" name="groupBox_6">
+       <widget class="QTabWidget" name="ctrl_tabWidget_knob">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>10</x>
           <y>10</y>
+          <width>271</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>黑体</family>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
+        <property name="tabletTracking">
+         <bool>false</bool>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::TabFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QTabBar {
+border: none;
+}
+QTabWidget::pane {
+    border: none; /* 去除选项卡内容区域的边框 */
+}
+QTabBar::tab{
+	height:24px;
+	width:50px;
+	color: rgb(211, 216, 237);
+	margin-left: 15px;
+    border-radius: 12px;
+    background-color: rgba(75, 80, 121,0.6);
+}
+QTabBar::tab:hover{
+background-color: rgba(75, 80, 121,0.8);
+}
+QTabBar::tab:selected {
+    background-color: rgba(75, 80, 121,1);
+}
+</string>
+        </property>
+        <property name="tabPosition">
+         <enum>QTabWidget::North</enum>
+        </property>
+        <property name="tabShape">
+         <enum>QTabWidget::Rounded</enum>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="ctrl_tab_knob_2">
+         <attribute name="title">
+          <string>音量</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="ctrl_tab_Plugin_2">
+         <attribute name="title">
+          <string>滚动</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>亮度</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_3">
+         <attribute name="title">
+          <string>滑动</string>
+         </attribute>
+        </widget>
+       </widget>
+       <widget class="QPushButton" name="ctrl_knob_button_calibration">
+        <property name="geometry">
+         <rect>
+          <x>930</x>
+          <y>9</y>
+          <width>71</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>黑体</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    background-color: rgba(75, 80, 121,1);
+    border-radius: 13px;
+    color: rgb(211, 216, 237);
+}
+QPushButton:hover {
+    background-color: rgba(75, 80, 121,0.8);
+}
+QPushButton:pressed {
+    background-color: rgba(75, 80, 121,0.6);
+}
+QPushButton:focus {
+    outline: none;
+}
+</string>
+        </property>
+        <property name="text">
+         <string>校准电机</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_9">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>41</y>
           <width>1001</width>
-          <height>531</height>
+          <height>499</height>
          </rect>
         </property>
         <property name="font">
@@ -354,31 +467,442 @@ QGroupBox::title {
         <property name="title">
          <string>电机设置</string>
         </property>
-        <widget class="QLabel" name="label_7">
+        <widget class="QGroupBox" name="groupBox_6">
          <property name="geometry">
           <rect>
-           <x>400</x>
-           <y>240</y>
-           <width>231</width>
-           <height>31</height>
+           <x>30</x>
+           <y>30</y>
+           <width>311</width>
+           <height>71</height>
           </rect>
          </property>
-         <property name="font">
-          <font>
-           <family>黑体</family>
-           <pointsize>10</pointsize>
-          </font>
+         <property name="styleSheet">
+          <string notr="true">QGroupBox {
+    border: none; /* 移除边框 */
+	color:rgb(138, 144, 176);
+}
+QGroupBox::title {
+	margin-top: 8px;
+	margin-left: 18px;
+}</string>
+         </property>
+         <property name="title">
+          <string>电机模式</string>
+         </property>
+         <widget class="QRadioButton" name="ctrl_knob_mode_switch_1">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>71</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QRadioButton {
+color: rgb(230, 232, 240);
+border-top-left-radius: 12px;
+border-bottom-left-radius: 12px;
+padding-left: 5px;
+}
+QRadioButton::unchecked {
+background-color: rgba(75, 80, 121,1);
+}
+QRadioButton::checked {
+background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+border: none;
+}
+QRadioButton::indicator {
+width: 0px;
+height: 0px;
+}</string>
+          </property>
+          <property name="text">
+           <string>智能模式</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="ctrl_knob_mode_switch_3">
+          <property name="geometry">
+           <rect>
+            <x>156</x>
+            <y>30</y>
+            <width>71</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QRadioButton {
+color: rgb(230, 232, 240);
+padding-left: 5px;
+}
+QRadioButton::unchecked {
+background-color: rgba(75, 80, 121,1);
+}
+QRadioButton::checked {
+background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+border: none;
+}
+QRadioButton::indicator {
+width: 0px;
+height: 0px;
+}</string>
+          </property>
+          <property name="text">
+           <string>惯性模式</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="ctrl_knob_mode_switch_2">
+          <property name="geometry">
+           <rect>
+            <x>83</x>
+            <y>30</y>
+            <width>71</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QRadioButton {
+color: rgb(230, 232, 240);
+}
+QRadioButton::unchecked {
+background-color: rgba(75, 80, 121,1);
+}
+QRadioButton::checked {
+background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+border: none;
+}
+QRadioButton::indicator {
+width: 0px;
+height: 0px;
+}</string>
+          </property>
+          <property name="text">
+           <string>编码器模式</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="ctrl_knob_mode_switch_4">
+          <property name="geometry">
+           <rect>
+            <x>229</x>
+            <y>30</y>
+            <width>71</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QRadioButton {
+color: rgb(230, 232, 240);
+border-top-right-radius: 12px;
+border-bottom-right-radius: 12px;
+padding-left: 5px;
+}
+QRadioButton::unchecked {
+background-color: rgba(75, 80, 121,1);
+}
+QRadioButton::checked {
+background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+border: none;
+}
+QRadioButton::indicator {
+width: 0px;
+height: 0px;
+}</string>
+          </property>
+          <property name="text">
+           <string>阻尼模式</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>90</y>
+           <width>561</width>
+           <height>61</height>
+          </rect>
          </property>
          <property name="styleSheet">
-          <string notr="true">background:rgb(29, 37, 86);
+          <string notr="true">QGroupBox {
+    border: none; /* 移除边框 */
+	color:rgb(138, 144, 176);
+}
+QGroupBox::title {
+	margin-top: 8px;
+	margin-left: 18px;
+}</string>
+         </property>
+         <property name="title">
+          <string>反馈力矩</string>
+         </property>
+         <widget class="QSlider" name="ctrl_knob_horizontalSlider_feedback">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>521</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QSlider
+{
+    background:rgba(0,0,0,0);
+    border-style: outset;
+    border-radius: 3px;
+}
+
+QSlider::groove:horizontal
+{
+    height: 8px;
+background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+    margin: 2px 0;
+border-radius:4px;
+}
+QSlider::handle:horizontal
+{
+    background: #fff;
+    width: 12px;
+    height: 12px;
+    margin: -5px 6px -5px 6px;
+    border-radius:9px;
+    border: 3px solid qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+}
+QSlider::add-page:horizontal
+{
+    height: 8px;
+background: rgb(72,81,120);
+border-radius:4px;
+}</string>
+          </property>
+          <property name="value">
+           <number>30</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QLabel" name="ctrl_knob_label_feedback">
+          <property name="geometry">
+           <rect>
+            <x>532</x>
+            <y>26</y>
+            <width>31</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <family>黑体</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:rgb(29, 37, 86);
 color:rgb(138, 144, 176);</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QGroupBox" name="groupBox_11">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>150</y>
+           <width>561</width>
+           <height>61</height>
+          </rect>
          </property>
-         <property name="text">
-          <string>制作中,下一版本开放,这不会很久.</string>
+         <property name="styleSheet">
+          <string notr="true">QGroupBox {
+    border: none; /* 移除边框 */
+	color:rgb(138, 144, 176);
+}
+QGroupBox::title {
+	margin-top: 8px;
+	margin-left: 18px;
+}</string>
          </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <property name="title">
+          <string>步数</string>
          </property>
+         <widget class="QSlider" name="ctrl_knob_horizontalSlider_step">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>521</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QSlider
+{
+    background:rgba(0,0,0,0);
+    border-style: outset;
+    border-radius: 3px;
+}
+
+QSlider::groove:horizontal
+{
+    height: 8px;
+background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+    margin: 2px 0;
+border-radius:4px;
+}
+QSlider::handle:horizontal
+{
+    background: #fff;
+    width: 12px;
+    height: 12px;
+    margin: -5px 6px -5px 6px;
+    border-radius:9px;
+    border: 3px solid qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+}
+QSlider::add-page:horizontal
+{
+    height: 8px;
+background: rgb(72,81,120);
+border-radius:4px;
+}</string>
+          </property>
+          <property name="value">
+           <number>30</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QLabel" name="ctrl_knob_label_step">
+          <property name="geometry">
+           <rect>
+            <x>532</x>
+            <y>26</y>
+            <width>31</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <family>黑体</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:rgb(29, 37, 86);
+color:rgb(138, 144, 176);</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QGroupBox" name="ctrl_knob_groupBox_limit">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>210</y>
+           <width>561</width>
+           <height>61</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QGroupBox {
+    border: none; /* 移除边框 */
+	color:rgb(138, 144, 176);
+}
+QGroupBox::title {
+	margin-top: 8px;
+	margin-left: 18px;
+}</string>
+         </property>
+         <property name="title">
+          <string>无阻尼触发力度</string>
+         </property>
+         <widget class="QSlider" name="ctrl_knob_horizontalSlider_limit">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>521</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QSlider
+{
+    background:rgba(0,0,0,0);
+    border-style: outset;
+    border-radius: 3px;
+}
+
+QSlider::groove:horizontal
+{
+    height: 8px;
+background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+    margin: 2px 0;
+border-radius:4px;
+}
+QSlider::handle:horizontal
+{
+    background: #fff;
+    width: 12px;
+    height: 12px;
+    margin: -5px 6px -5px 6px;
+    border-radius:9px;
+    border: 3px solid qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+}
+QSlider::add-page:horizontal
+{
+    height: 8px;
+background: rgb(72,81,120);
+border-radius:4px;
+}</string>
+          </property>
+          <property name="value">
+           <number>30</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QLabel" name="ctrl_knob_label_limit">
+          <property name="geometry">
+           <rect>
+            <x>532</x>
+            <y>26</y>
+            <width>31</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <family>黑体</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:rgb(29, 37, 86);
+color:rgb(138, 144, 176);</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
         </widget>
        </widget>
       </widget>

@@ -59,7 +59,8 @@ SwitchDialog::~SwitchDialog() {
 
 void SwitchDialog::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
-    QPoint y = event->globalPosition().toPoint();
+    //QPoint y = event->globalPosition().toPoint();
+    QPoint y = event->globalPos();
     QPoint x = y - z;
     this->move(x);
 }
@@ -67,7 +68,8 @@ void SwitchDialog::mouseMoveEvent(QMouseEvent *event) {
 void SwitchDialog::mousePressEvent(QMouseEvent *event) {
     QWidget::mousePressEvent(event);
     QPoint x = this->geometry().topLeft();
-    QPoint y = event->globalPosition().toPoint();
+    //QPoint y = event->globalPosition().toPoint();
+    QPoint y = event->globalPos();
     z = y - x;
 }
 

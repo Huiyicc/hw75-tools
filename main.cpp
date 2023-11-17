@@ -2,6 +2,7 @@
 #include <QLocale>
 #include <QTranslator>
 #include <QMessageBox>
+#include <QSharedMemory>
 #include "ui/mainwindow.h"
 #include "http/httpsvr.hpp"
 #include "plugin/Plugin.hpp"
@@ -11,7 +12,17 @@ std::shared_ptr<QApplication> g_app = nullptr;
 MainWindow *g_mainWind = nullptr;
 
 int main(int argc, char *argv[]) {
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
     g_app = std::make_shared<QApplication>(argc, argv);
+
+	// 防止多开
+	QString key = "__HWTOOLS_LOCK_";
+	QSharedMemory sharedMemory(key);
+	if (!sharedMemory.create(1)) {
+		QMessageBox::critical(nullptr, "错误", "检查程序锁失败，可能已经有一个实例在运行了");
+		exit(-1);
+	}
 
     initHTTPSvr();
 

@@ -9,12 +9,12 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if ((CMAKE_BUILD_TYPE MATCHES "Debug"))
-    add_definitions(-D_DEBUG)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall")
-else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3 -g -Wall")
-endif ()
+#if ((CMAKE_BUILD_TYPE MATCHES "Debug"))
+#    add_definitions(-D_DEBUG)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall")
+#else ()
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3 -g -Wall")
+#endif ()
 
 
 
@@ -51,10 +51,13 @@ set(PROJECT_SOURCES
         main.cpp
         ${TS_FILES}
         res.qrc
+        ui/widget/KnobDashboard.cpp
+        ui/widget/KnobDashboard.hpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     if ((CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin"))
+        add_definitions(-D__APPLE__)
         qt_add_executable(hw_tools
                 MANUAL_FINALIZATION
                 MACOSX_BUNDLE
@@ -80,6 +83,7 @@ else()
     else()
         add_executable(hw_tools
                 ${PROJECT_SOURCES}
+                ui/knobaligndialog.h ui/knobaligndialog.cpp ui/knobaligndialog.ui
         )
     endif()
 endif()
@@ -89,8 +93,10 @@ target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi p
 
 if(CMAKE_HOST_UNIX)
     # linux独有库
+    add_definitions(-D__linux__)
 elseif(CMAKE_HOST_WIN32)
     # windows独有库
+    add_definitions(-D__WIN32__)
     target_link_libraries(hw_tools PRIVATE -lws2_32)
     set_target_properties(hw_tools PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()

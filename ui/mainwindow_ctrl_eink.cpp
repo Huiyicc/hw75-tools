@@ -21,10 +21,10 @@ void MainWindow::ctrlEventEinkSwitchImage(bool checked) {
 	// 创建文件选择对话框
 	QString filePath = QFileDialog::getOpenFileName(this, "选择图片", "", "图像文件 (*.jpg *.jpeg *.png *.bmp)");;
 	// 检查用户是否选择了文件
-	ui->ctrl_eink_button_switchImage->setVisible(!filePath.isEmpty());
 	if (filePath.isEmpty()) {
 		return;
 	}
+	ui->ctrl_eink_button_switchImage->setVisible(!filePath.isEmpty());
 	ui->ctrl_eink_imgview->clear();
 	ui->ctrl_eink_edit_imagePath->setText(filePath);
 	// 设置预览图像

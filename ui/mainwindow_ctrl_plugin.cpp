@@ -77,25 +77,25 @@ void MainWindow::ctrlPluginInit(QWidget *parent) {
 	ui->ctrl_plugin_tableWidget_pluginlist->setSelectionMode(QAbstractItemView::SingleSelection);
 	ui->ctrl_plugin_tableWidget_pluginlist->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui->ctrl_plugin_tableWidget_pluginlist->setStyleSheet("QTableWidget {\n"
-	                                                      "background:rgb(29, 37, 86);\n"
-	                                                      "outline: none;"
+	                                                        "background:rgb(29, 37, 86);\n"
+	                                                        "outline: none;"
 	                                                      "}\n"
-	                                                      "QHeaderView::section {\n"
-	                                                      "background-color: rgb(29, 37, 86);\n"
-	                                                      "background:rgb(29, 37, 86);\n"
-	                                                      "border-left: 1px solid rgb(255,255,255);\n"
-	                                                      "border-radius: 0px;\n"
-	                                                      "color: white;\n"
+	                                                        "QHeaderView::section {\n"
+	                                                        "background-color: rgb(29, 37, 86);\n"
+	                                                        "background:rgb(29, 37, 86);\n"
+	                                                        "border-left: 1px solid rgb(255,255,255);\n"
+	                                                        "border-radius: 0px;\n"
+	                                                        "color: white;\n"
 	                                                      "}\n"
-	                                                      "QTableWidget::item {\n"
-	                                                      "color: white;\n"
+	                                                        "QTableWidget::item {\n"
+	                                                        "color: white;\n"
 	                                                      "}\n"
-	                                                      "QTableWidget::item:selected {"
-	                                                      "color: rgb(211, 216, 237);"
-	                                                      "background-color: rgb(75, 80, 121); "
+	                                                        "QTableWidget::item:selected {"
+	                                                        "color: rgb(211, 216, 237);"
+	                                                        "background-color: rgb(75, 80, 121); "
 	                                                      "}"
-	                                                      "QTableWidget::item { "
-	                                                      "color: rgb(211, 216, 237);"
+	                                                        "QTableWidget::item { "
+	                                                        "color: rgb(211, 216, 237);"
 	                                                      "}");
 
 	connect(ui->ctrl_plugin_tableWidget_pluginlist, &QTableWidget::customContextMenuRequested,
@@ -200,10 +200,6 @@ void MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, Plug
 			label->setStyleSheet("background:rgb(29, 37, 86);\n"
 			                     "color:rgb(138, 144, 176);");
 			label->show();
-//			pData->Bind[bind.c_str()] = PluginUI::BindInfo{
-//				.Widget = label,
-//				.WidgetType=WIDGET_TEXT
-//			};
 		} else if (type == "input") {
 			// 输入框
 			auto input = new QLineEdit(widget);
@@ -354,8 +350,9 @@ void MainWindow::ctrlPluginTickEvent() {
 		if (plugin.second.Enable) {
 			try {
 				if (!Lib::Plugin::CallPluginTimedEvent("ctrl", plugin.second.RawName)) {
-					std::cout<<"插件Tick事件失败:"<<plugin.second.RawName.toStdString()<<std::endl;
-					std::cout<<"LastError:"<<Lib::Plugin::CallPluginGetLastError("ctrl", plugin.second.RawName)<<std::endl;
+					std::cout << "插件Tick事件失败:" << plugin.second.RawName.toStdString() << std::endl;
+					std::cout << "LastError:" << Lib::Plugin::CallPluginGetLastError("ctrl", plugin.second.RawName)
+					          << std::endl;
 				}
 			} catch (std::exception &e) {
 				std::cout << "插件Tick事件异常:" << e.what() << std::endl;
@@ -402,6 +399,14 @@ void MainWindow::ctrlPluginContextMenuEvent() {
 	// 检查启用
 	auto &pluginInfo = Lib::Plugin::GetPlugin("ctrl", selectedIndexes[2].data().toString());
 	pluginInfo.Enable = !pluginInfo.Enable;
+	if (pluginInfo.Enable) {
+		Lib::Plugin::CallPluginInit("ctrl", pluginInfo.RawName, pluginInfo);
+	} else {
+		Lib::Plugin::CallPluginUnRegister("ctrl", pluginInfo.RawName);
+	}
+	auto cfg = GetConfigInstance();
+	cfg->getConfig().Ctrl.Plugins[pluginInfo.RawName.toStdString()].Enable = pluginInfo.Enable;
+	cfg->saveConfig();
 	// 更新表格
 	ui->ctrl_plugin_tableWidget_pluginlist->item(selectedIndexes[0].row(), 0)->setText(pluginInfo.Enable ? "√" : "×");
 }

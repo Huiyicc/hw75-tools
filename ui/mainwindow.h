@@ -48,6 +48,10 @@ private:
 	// 连接设备
 	void ctrlEventConnectDevices();
 
+    // ---扩展-电机模块---
+    void knobInit(QWidget *parent);
+
+    void knobEventCalibration(bool checked);
 
 	// ---扩展-墨水屏控制---
 	// 初始化
