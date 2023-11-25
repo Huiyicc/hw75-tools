@@ -96,3 +96,4 @@ bool MainWindow::ctrlEinkPushImage(const char *data, int len) {
 	}
 	return false;
 }
+

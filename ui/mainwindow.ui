@@ -472,7 +472,7 @@ QGroupBox::title {
           <rect>
            <x>30</x>
            <y>30</y>
-           <width>311</width>
+           <width>301</width>
            <height>71</height>
           </rect>
          </property>
@@ -521,7 +521,7 @@ height: 0px;
            <string>智能模式</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
          <widget class="QRadioButton" name="ctrl_knob_mode_switch_3">
@@ -582,6 +582,9 @@ height: 0px;
           <property name="text">
            <string>编码器模式</string>
           </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
          </widget>
          <widget class="QRadioButton" name="ctrl_knob_mode_switch_4">
           <property name="geometry">
@@ -613,6 +616,39 @@ height: 0px;
           </property>
           <property name="text">
            <string>阻尼模式</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="ctrl_knob_mode_switch_none">
+          <property name="geometry">
+           <rect>
+            <x>340</x>
+            <y>30</y>
+            <width>71</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QRadioButton {
+color: rgb(230, 232, 240);
+padding-left: 5px;
+}
+QRadioButton::unchecked {
+background-color: rgba(75, 80, 121,1);
+}
+QRadioButton::checked {
+background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+border: none;
+}
+QRadioButton::indicator {
+width: 0px;
+height: 0px;
+}</string>
+          </property>
+          <property name="text">
+           <string>惯性模式</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </widget>
@@ -708,11 +744,11 @@ color:rgb(138, 144, 176);</string>
            <string/>
           </property>
           <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </widget>
-        <widget class="QGroupBox" name="groupBox_11">
+        <widget class="QGroupBox" name="ctrl_knob_groupBox_step">
          <property name="geometry">
           <rect>
            <x>30</x>
@@ -804,7 +840,7 @@ color:rgb(138, 144, 176);</string>
            <string/>
           </property>
           <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </widget>
@@ -900,7 +936,7 @@ color:rgb(138, 144, 176);</string>
            <string/>
           </property>
           <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </widget>

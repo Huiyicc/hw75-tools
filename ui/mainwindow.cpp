@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
 		ctrlOLEDInit(parent);
 		ctrlPluginInit(parent);
 
-	}catch (std::exception &e) {
+	} catch (std::exception &e) {
 		std::cout << e.what() << std::endl;
 		MsgBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
 		exit(-1);
@@ -59,4 +59,16 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
 
 void MainWindow::sysButtonEventMin(bool checked) {
     hide();
+}
+
+bool MainWindow::checkCtrlConnect() {
+  if (m_modelConnectStatus.find(HW_MODEL_NAME_CTRL) == m_modelConnectStatus.end()) {
+    // TODO: 未连接设备
+    return false;
+  }
+  return true;
+}
+
+Lib::HWDevice MainWindow::getCtrlConnectDev() {
+  return m_modelConnectStatus[HW_MODEL_NAME_CTRL];
 }

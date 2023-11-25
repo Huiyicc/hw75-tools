@@ -3,3 +3,5 @@
 /cmake-build-release/
 
 /pulish/
+/lib/protobuf/hid_msg.pb.cc
+/lib/protobuf/hid_msg.pb.h

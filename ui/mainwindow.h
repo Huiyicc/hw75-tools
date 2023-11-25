@@ -18,115 +18,129 @@ class MainWindow : public QMainWindow {
 Q_OBJECT
 
 public:
-	MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr);
 
-	~MainWindow();
+    ~MainWindow();
 
-	void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 
-	void mousePressEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 
-	void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
-	void sysButtonEventMin(bool checked);
+    void sysButtonEventMin(bool checked);
 
-	void initMenu();
+    void initMenu();
 
-	bool ctrlEinkPushImage(const char *data, int len);
+    bool ctrlEinkPushImage(const char *data, int len);
 
 private:
 
-	// ---扩展----
-	std::shared_ptr<Lib::Image> m_userPushImage = std::make_shared<Lib::Image>();
+    bool checkCtrlConnect();
 
-	// 初始化
-	void ctrlInit(QWidget *parent);
+    Lib::HWDevice getCtrlConnectDev();
 
-	// 选择设备
-	void ctrlEventSwitchDevices(bool checked);
+    // ---扩展----
+    std::shared_ptr<Lib::Image> m_userPushImage = std::make_shared<Lib::Image>();
 
-	// 连接设备
-	void ctrlEventConnectDevices();
+    // 初始化
+    void ctrlInit(QWidget *parent);
+
+    // 选择设备
+    void ctrlEventSwitchDevices(bool checked);
+
+    // 连接设备
+    void ctrlEventConnectDevices();
 
     // ---扩展-电机模块---
     void knobInit(QWidget *parent);
 
     void knobEventCalibration(bool checked);
 
-	// ---扩展-墨水屏控制---
-	// 初始化
-	void ctrlEinkInit(QWidget *parent);
+    // 切换app选项卡
+    void knobEventTabChanged(int);
 
-	// 选择图片
-	void ctrlEventEinkSwitchImage(bool checked);
+    void knobUpdataModeSwitchUI(Lib::KnobAppConf&);
+    // 参数条拖动事件
+    void knobEventSliderMoveFeedback(int);
+    // 电机模式切换事件
+    void knobEventModeSwitchClicked(bool);
 
-	// 更新预览图像
-	void ctrlEinkUpdateUserPreviewImage();
+    // ---扩展-墨水屏控制---
+    // 初始化
+    void ctrlEinkInit(QWidget *parent);
 
-	// 更新滑块拖动事件
-	void ctrlEventEinkValueChanged(int value);
+    // 选择图片
+    void ctrlEventEinkSwitchImage(bool checked);
 
-	// 更新屏幕图片按钮事件
-	void ctrlEventEinkPushImage(bool checked);
+    // 更新预览图像
+    void ctrlEinkUpdateUserPreviewImage();
+
+    // 更新滑块拖动事件
+    void ctrlEventEinkValueChanged(int value);
+
+    // 更新屏幕图片按钮事件
+    void ctrlEventEinkPushImage(bool checked);
 
 
-	// ---扩展-OLED控制---
-	// 初始化
-	void ctrlOLEDInit(QWidget *parent);
+    // ---扩展-OLED控制---
+    // 初始化
+    void ctrlOLEDInit(QWidget *parent);
 
-	// 选择图片
-	void ctrlEventOLEDSwitchImage(bool checked);
+    // 选择图片
+    void ctrlEventOLEDSwitchImage(bool checked);
 
-	// 更新滑块拖动事件
-	void ctrlEventOLEDValueChanged(int value);
+    // 更新滑块拖动事件
+    void ctrlEventOLEDValueChanged(int value);
 
-	// 更新屏幕图片按钮事件
-	void ctrlEventOLEDPushImage(bool checked);
+    // 更新屏幕图片按钮事件
+    void ctrlEventOLEDPushImage(bool checked);
 
-	// 更新预览图像
-	void ctrlOLEDUpdateUserPreviewImage();
+    // 更新预览图像
+    void ctrlOLEDUpdateUserPreviewImage();
 
-	// --扩展-插件---
-	// 初始化插件列表
-	void ctrlPluginInit(QWidget *parent);
+    // --扩展-插件---
+    // 初始化插件列表
+    void ctrlPluginInit(QWidget *parent);
 
-	// 插件列表点击事件
-	void ctrlEventPluginListClicked(QModelIndex index);
+    // 插件列表点击事件
+    void ctrlEventPluginListClicked(QModelIndex index);
 
-	// 显示插件UI
-	void ctrlPluginUIShow(QString &name);
+    // 显示插件UI
+    void ctrlPluginUIShow(QString &name);
 
-	// 解析插件UI
-	void
-	ctrlPluginParseUI(nlohmann::json &config, QWidget *, PluginUI *pData = nullptr, bool father = false, int top = 0);
+    // 解析插件UI
+    void
+    ctrlPluginParseUI(nlohmann::json &config, QWidget *, PluginUI *pData = nullptr, bool father = false, int top = 0);
 
-	// 保存插件配置
-	void ctrlPluginSaveConfig(bool checked);
+    // 保存插件配置
+    void ctrlPluginSaveConfig(bool checked);
 
-	// 插件定时事件
-	void ctrlPluginTickEvent();
+    // 插件定时事件
+    void ctrlPluginTickEvent();
 
-	// 插件提交事件
-	void ctrlPluginSubmint(bool checked);
+    // 插件提交事件
+    void ctrlPluginSubmint(bool checked);
 
-	// 扩展-插件-右键菜单-弹出
-	void ctrlPluginEjectMenuEvent(const QPoint &pos);
-	// 扩展-插件-右键菜单
-	void ctrlPluginContextMenuEvent();
+    // 扩展-插件-右键菜单-弹出
+    void ctrlPluginEjectMenuEvent(const QPoint &pos);
+
+    // 扩展-插件-右键菜单
+    void ctrlPluginContextMenuEvent();
 
 
 private:
-	Ui::MainWindow *ui;
-	QPoint z;
+    Ui::MainWindow *ui;
+    QPoint z;
 
-	std::map<std::string, Lib::HWDevice> m_modelConnectStatus;
+    std::map<std::string, Lib::HWDevice> m_modelConnectStatus;
 
-	QSystemTrayIcon m_sysTrayIcon;
-	QMenu m_trayMenu;
+    QSystemTrayIcon m_sysTrayIcon;
+    QMenu m_trayMenu;
 
-	QMenu *m_pCtrlPluginContextMenu = nullptr;
+    QMenu *m_pCtrlPluginContextMenu = nullptr;
 
-	std::shared_ptr<QTimer> m_pluginTick;
+    std::shared_ptr<QTimer> m_pluginTick;
 };
 
 #endif // MAINWINDOW_H
