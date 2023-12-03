@@ -52,6 +52,9 @@ private:
     // 连接设备
     void ctrlEventConnectDevices();
 
+    // 切换主选项卡
+    void ctrlEventTabChanged(int index);
+
     // ---扩展-电机模块---
     void knobInit(QWidget *parent);
 
@@ -128,6 +131,16 @@ private:
     // 扩展-插件-右键菜单
     void ctrlPluginContextMenuEvent();
 
+    // 扩展-系统设置
+    void ctrlSettingInit(QWidget *parent);
+
+    // 扩展-系统设置-设置选项卡被切换
+    void ctrlSettingTabChanged();
+
+    // 扩展-系统设置-事件-滑块-休眠时间
+    void ctrlSettingEventCtrlSleepTimeValueChanged(int value);
+    // 扩展-系统设置-事件-更新ui数据
+    void ctrlSettingEventUpdataInfos();
 
 private:
     Ui::MainWindow *ui;

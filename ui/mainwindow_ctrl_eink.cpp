@@ -32,7 +32,8 @@ void MainWindow::ctrlEventEinkSwitchImage(bool checked) {
 	m_userPushImage = tmpptr;
 	auto img = m_userPushImage->GetImage();
 	ui->ctrl_eink_image_threshold_horizontalSlider->setMinimum(1);
-	ui->ctrl_eink_image_threshold_horizontalSlider->setMaximum(m_userPushImage->GetMaximumThreshold());
+	//ui->ctrl_eink_image_threshold_horizontalSlider->setMaximum(m_userPushImage->GetMaximumThreshold());
+  ui->ctrl_eink_image_threshold_horizontalSlider->setMaximum(255);
 	ui->ctrl_eink_image_threshold_label->setText("50");
 	ui->ctrl_eink_image_threshold_horizontalSlider->setValue(50);
 	ui->ctrl_eink_imgedit_group->setEnabled(true);

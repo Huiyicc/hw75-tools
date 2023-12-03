@@ -3,6 +3,7 @@
 //
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QThread>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "knobaligndialog.h"
@@ -60,6 +61,8 @@ void MainWindow::knobInit(QWidget *parent) {
   connect(ui->ctrl_knob_horizontalSlider_feedback, &QSlider::valueChanged, this,
           &MainWindow::knobEventSliderMoveFeedback);
   connect(ui->ctrl_knob_horizontalSlider_step, &QSlider::valueChanged, this, &MainWindow::knobEventSliderMoveFeedback);
+  connect(ui->ctrl_knob_horizontalSlider_triggerstep, &QSlider::valueChanged, this,
+          &MainWindow::knobEventSliderMoveFeedback);
   connect(ui->ctrl_knob_horizontalSlider_limit, &QSlider::valueChanged, this, &MainWindow::knobEventSliderMoveFeedback);
 
   connect(ui->ctrl_knob_mode_switch_1, &QRadioButton::clicked, this, &MainWindow::knobEventModeSwitchClicked);
@@ -116,6 +119,11 @@ void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf) {
   ui->ctrl_knob_horizontalSlider_feedback->setMinimum(conf.torqueLimitConf.min * 10);
   ui->ctrl_knob_horizontalSlider_feedback->setValue(conf.torqueLimitConf.value * 10);
   ui->ctrl_knob_label_feedback->setText(QString::number(conf.torqueLimitConf.value));
+  // 触发步数所有模式都有
+  ui->ctrl_knob_horizontalSlider_triggerstep->setMaximum(10);
+  ui->ctrl_knob_horizontalSlider_triggerstep->setMinimum(1);
+  ui->ctrl_knob_horizontalSlider_triggerstep->setValue(conf.AddedValue);
+  ui->ctrl_knob_label_triggerstep->setText(QString::number(conf.AddedValue));
   // 有步数的模式
   if (conf.Mode == KnobMode::MODE_ENCODER
       || conf.Mode == KnobMode::MODE_INTELLIGENT) {
@@ -142,15 +150,36 @@ void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf) {
 
 // 滑块拖动事件
 void MainWindow::knobEventSliderMoveFeedback(int value) {
+  hid::msg::SetAppType eventType;
+  Lib::KnobAppConf conf;
   auto movedSlider = qobject_cast<QSlider *>(QObject::sender());
   if (movedSlider == ui->ctrl_knob_horizontalSlider_feedback) {
     ui->ctrl_knob_label_feedback->setText(QString::number(value / 10.0));
+    eventType = hid::msg::SetAppType::TorqueLimit;
+    conf.torqueLimitConf.value = value / 10.0;
   } else if (movedSlider == ui->ctrl_knob_horizontalSlider_step) {
+    eventType = hid::msg::SetAppType::Step;
     ui->ctrl_knob_label_step->setText(QString::number(value));
+    conf.stepConf.value = value;
   } else if (movedSlider == ui->ctrl_knob_horizontalSlider_limit) {
+    eventType = hid::msg::SetAppType::VelocityLimit;
     ui->ctrl_knob_label_limit->setText(QString::number(value / 10.0));
+    conf.velocityLimitConf.value = value / 10.0;
+  } else if (movedSlider == ui->ctrl_knob_horizontalSlider_triggerstep) {
+    eventType = hid::msg::SetAppType::AddedValue;
+    ui->ctrl_knob_label_triggerstep->setText(QString::number(value));
+    conf.AddedValue = value;
   }
-
+  auto devices = getCtrlConnectDev();
+  Lib::HWDeviceTools tools;
+  try {
+    tools.SetDynamicAppinConf(devices, g_appIDTable[ui->ctrl_tabWidget_knob->currentIndex()],
+                              eventType, conf);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    std::cout << conf.toJson() << std::endl;
+    MsgBox::critical(this, "错误", QString::fromStdString(e.what()));;
+  }
 }
 
 // 模式切换按钮点击事件
@@ -173,7 +202,8 @@ void MainWindow::knobEventModeSwitchClicked(bool checked) {
   Lib::HWDeviceTools tools;
   try {
     tools.SetDynamicAppinConf(devices, g_appIDTable[ui->ctrl_tabWidget_knob->currentIndex()],
-                              hid::msg::SetAppType::KnobMode,conf);
+                              hid::msg::SetAppType::KnobMode, conf);
+    QThread::msleep(2);
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
     MsgBox::critical(this, "错误", QString::fromStdString(e.what()));;

@@ -185,6 +185,7 @@ KnobAppConf HWDeviceTools::GetDynamicAppinConf(const QString &devicesPath, int a
     result.velocityLimitConf.value = velocityConf.value();
     result.velocityLimitConf.max = 5;
     result.velocityLimitConf.min = 0.4f;
+    result.AddedValue = knob.addedvalue();
   }
 
   // 关闭设备
@@ -224,6 +225,9 @@ void HWDeviceTools::SetDynamicAppinConf(const QString &devicesPath, int appId, h
     auto velocityConf = knobMsg->mutable_velocitylimitconf();
     velocityConf->set_value(conf.velocityLimitConf.value);
   }
+  if (setAppType == hid::msg::SetAppType::AddedValue) {
+    knobMsg->set_addedvalue(conf.AddedValue);
+  }
   // 发送消息
   int result_code = sendMessage(device, message);
   // 读取USB设备返回的字节流
@@ -246,6 +250,32 @@ void HWDeviceTools::SetDynamicAppinConf(const QString &devicesPath, int appId, h
   // 关闭设备
   hid_close(device);
 };
+
+CtrlSysCfg HWDeviceTools::GetDynamicSysConf(HWDevice &devices) {
+  auto device = hid_open_path(devices.Path.toStdString().c_str());
+
+  if (!device) {
+    throw DeviceException(hid_error(nullptr));
+  }
+  hid::msg::PcMessage message;
+  message.set_id(hid::msg::MessageId::GET_SYS_CFG);
+
+  // 发送消息
+  int result_code = sendMessage(device, message);
+  // 读取USB设备返回的字节流
+  std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
+  // 处理返回的字节流
+  hid::msg::CtrlMessage ctrlMessage;
+  readMessage(device, ctrlMessage, result_code);
+  CtrlSysCfg result;
+  if (ctrlMessage.has_sys_cfg() && ctrlMessage.id() == hid::msg::GET_SYS_CFG) {
+    auto &sysCfg = ctrlMessage.sys_cfg();
+    result.SleepTime = sysCfg.sleeptime();
+  }
+  // 关闭设备
+  hid_close(device);
+  return result;
+}
 
 
 void HWDeviceTools::SetDynamicOLEDScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar) {
@@ -340,6 +370,7 @@ int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message,
   if (messageSize < 0) {
     auto err = hid_error(dev);
     // 处理发送失败的情况
+    hid_close(dev);
     throw DeviceException(err);
   }
   auto dataPtr = data.get();
@@ -353,6 +384,7 @@ int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message,
   }
   int lents = dataPtr[2];
   if (lents > HID_REPORT_COUNT) {
+    hid_close(dev);
     throw DeviceException(L"data lens is to long.");
   }
   // 根据长度写入流

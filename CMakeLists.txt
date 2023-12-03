@@ -34,6 +34,8 @@ file(GLOB IMAGE_SOURCES lib/image/*.cpp)
 file(GLOB PROTOBUF_SOURCES lib/protobuf/*.cpp)
 file(GLOB PROTOBUFCC_SOURCES lib/protobuf/*.cc)
 file(GLOB Plugin_SOURCES lib/plugin/*.cpp)
+include_directories(lib/fmt/inc)
+file(GLOB FMT_SOURCES lib/fmt/src/*.cc)
 #file(GLOB QT_SOURCES ui/*.cpp)
 
 
@@ -47,6 +49,7 @@ set(PROJECT_SOURCES
         ${PROTOBUF_SOURCES}
         ${PROTOBUFCC_SOURCES}
         ${Plugin_SOURCES}
+        ${FMT_SOURCES}
         ${QT_SOURCES}
         main.cpp
         ${TS_FILES}

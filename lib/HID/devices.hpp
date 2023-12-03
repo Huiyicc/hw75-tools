@@ -76,6 +76,7 @@ struct HWDevice {
 struct KnobAppConf {
     // 电机模式
     int Mode = 0;
+    int AddedValue = 0;
     struct ConfigData {
         // 当前值
         float value = 0;
@@ -90,6 +91,36 @@ struct KnobAppConf {
     velocityLimitConf,
     // 步数
     stepConf;
+
+    nlohmann::json toJson() {
+      return {
+          {"mode",             Mode},
+          {"added_value",      AddedValue},
+          {"torque_limitConf", {
+                                   "value", torqueLimitConf.value,
+                                    "min",   torqueLimitConf.min,
+                                    "max",   torqueLimitConf.max
+                               }
+          },
+          {"velocity_limitConf", {
+                                     "value", velocityLimitConf.value,
+                                      "min",   velocityLimitConf.min,
+                                      "max",   velocityLimitConf.max
+                                 }
+          },
+          {"step_conf",         {
+                                     "value", stepConf.value,
+                                      "min",   stepConf.min,
+                                      "max",   stepConf.max
+                                 }
+          }
+      };
+    }
+};
+
+struct CtrlSysCfg {
+    // 休眠时间(单位:秒)
+    uint32_t SleepTime=0;
 };
 
 
@@ -120,7 +151,8 @@ struct HWDeviceDynamicVersion {
                               {"knob_prefs", Features.KnobPrefs},
                               {"rgb_full_control", Features.RgbFullControl},
                               {"rgb_indicator", Features.RgbIndicator}
-                          }}
+                          }
+          }
       };
     }
 };
@@ -169,10 +201,16 @@ public:
     KnobAppConf GetDynamicAppinConf(HWDevice &devices, int appId);
 
     KnobAppConf GetDynamicAppinConf(const QString &devicesPath, int appId);
+
     //---
     // 设置扩展App配置
-    void SetDynamicAppinConf(HWDevice &devices, int appId,hid::msg::SetAppType setAppType, KnobAppConf &conf);
-    void SetDynamicAppinConf(const QString &devicesPath, int appId,hid::msg::SetAppType setAppType, KnobAppConf &conf);
+    void SetDynamicAppinConf(HWDevice &devices, int appId, hid::msg::SetAppType setAppType, KnobAppConf &conf);
+
+    void SetDynamicAppinConf(const QString &devicesPath, int appId, hid::msg::SetAppType setAppType, KnobAppConf &conf);
+
+    //---
+    // 获取扩展系统配置
+    CtrlSysCfg GetDynamicSysConf(HWDevice &devices);
 
     //---
     /** 设置扩展模块的OLED
@@ -181,6 +219,7 @@ public:
     void SetDynamicOLEDScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar);
 
     void SetDynamicOLEDScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar);
+
     //---
     // 设置扩展屏幕
     void SetDynamicScerrn(int id, const QString &devicesPath, std::vector<unsigned char> &imageArrar);
