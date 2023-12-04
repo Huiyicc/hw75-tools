@@ -53,9 +53,12 @@ std::map<int, int> g_appIDTable = {
     {3, APPID_LEFTRIGHT},
 };
 
+bool knobTabChangedLock = false;
+
 // 初始化
 void MainWindow::knobInit(QWidget *parent) {
   connect(ui->ctrl_knob_button_calibration, &QPushButton::clicked, this, &MainWindow::knobEventCalibration);
+  ui->ctrl_knob_button_calibration->setHidden(true);
   connect(ui->ctrl_tabWidget_knob, &QTabWidget::currentChanged, this, &MainWindow::knobEventTabChanged);
 
   connect(ui->ctrl_knob_horizontalSlider_feedback, &QSlider::valueChanged, this,
@@ -92,6 +95,7 @@ void MainWindow::knobEventTabChanged(int index) {
     std::cout << "未知的应用" << std::endl;
     return;
   }
+  knobTabChangedLock = true;
   auto devices = getCtrlConnectDev();
   Lib::HWDeviceTools tools;
   auto conf = tools.GetDynamicAppinConf(devices, g_appIDTable[index]);
@@ -99,7 +103,7 @@ void MainWindow::knobEventTabChanged(int index) {
 }
 
 // 更新模式切换UI
-void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf) {
+void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf, bool swf) {
   std::map<int, QRadioButton *> bMap = {
       {KnobMode::MODE_INTELLIGENT, ui->ctrl_knob_mode_switch_1},
       {KnobMode::MODE_ENCODER,     ui->ctrl_knob_mode_switch_2},
@@ -114,6 +118,22 @@ void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf) {
   if (bMap.find(conf.Mode) != bMap.end()) {
     bMap[conf.Mode]->setChecked(true);
   }
+  if (swf) {
+    // 有编码器步数的模式
+    if (conf.Mode == KnobMode::MODE_ENCODER
+        || conf.Mode == KnobMode::MODE_INTELLIGENT) {
+      ui->ctrl_knob_groupBox_step->setHidden(false);
+    } else {
+      ui->ctrl_knob_groupBox_step->setHidden(true);
+    }
+    // 智能模式
+    if (conf.Mode == KnobMode::MODE_INTELLIGENT) {
+      ui->ctrl_knob_groupBox_limit->setHidden(false);
+    } else {
+      ui->ctrl_knob_groupBox_limit->setHidden(true);
+    }
+    return;
+  }
   // 力矩所有模式都有
   ui->ctrl_knob_horizontalSlider_feedback->setMaximum(conf.torqueLimitConf.max * 10);
   ui->ctrl_knob_horizontalSlider_feedback->setMinimum(conf.torqueLimitConf.min * 10);
@@ -124,28 +144,30 @@ void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf) {
   ui->ctrl_knob_horizontalSlider_triggerstep->setMinimum(1);
   ui->ctrl_knob_horizontalSlider_triggerstep->setValue(conf.AddedValue);
   ui->ctrl_knob_label_triggerstep->setText(QString::number(conf.AddedValue));
-  // 有步数的模式
+  // 有编码器步数的模式
   if (conf.Mode == KnobMode::MODE_ENCODER
       || conf.Mode == KnobMode::MODE_INTELLIGENT) {
-    ui->ctrl_knob_groupBox_step->setEnabled(true);
+    ui->ctrl_knob_groupBox_step->setHidden(false);
     ui->ctrl_knob_horizontalSlider_step->setMaximum(int(conf.stepConf.max));
     ui->ctrl_knob_horizontalSlider_step->setMinimum(int(conf.stepConf.min));
     ui->ctrl_knob_horizontalSlider_step->setValue(int(conf.stepConf.value));
     ui->ctrl_knob_label_step->setText(QString::number(conf.stepConf.value));
   } else {
-    ui->ctrl_knob_groupBox_step->setEnabled(false);
+    ui->ctrl_knob_groupBox_step->setHidden(true);
   }
   // 智能模式
   if (conf.Mode == KnobMode::MODE_INTELLIGENT) {
-    ui->ctrl_knob_groupBox_limit->setEnabled(true);
+    ui->ctrl_knob_groupBox_limit->setHidden(false);
     ui->ctrl_knob_horizontalSlider_limit->setMaximum(conf.velocityLimitConf.max * 10);
     ui->ctrl_knob_horizontalSlider_limit->setMinimum(conf.velocityLimitConf.min * 10);
     ui->ctrl_knob_horizontalSlider_limit->setValue(conf.velocityLimitConf.value * 10);
     ui->ctrl_knob_label_limit->setText(QString::number(conf.velocityLimitConf.value));
   } else {
-    ui->ctrl_knob_groupBox_limit->setEnabled(false);
+    ui->ctrl_knob_groupBox_limit->setHidden(true);
   }
-
+  if (knobTabChangedLock) {
+    knobTabChangedLock = false;
+  }
 }
 
 // 滑块拖动事件
@@ -173,8 +195,10 @@ void MainWindow::knobEventSliderMoveFeedback(int value) {
   auto devices = getCtrlConnectDev();
   Lib::HWDeviceTools tools;
   try {
-    tools.SetDynamicAppinConf(devices, g_appIDTable[ui->ctrl_tabWidget_knob->currentIndex()],
-                              eventType, conf);
+    if (!knobTabChangedLock) {
+      tools.SetDynamicAppinConf(devices, g_appIDTable[ui->ctrl_tabWidget_knob->currentIndex()],
+                                eventType, conf);
+    }
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
     std::cout << conf.toJson() << std::endl;
@@ -199,6 +223,7 @@ void MainWindow::knobEventModeSwitchClicked(bool checked) {
   auto devices = getCtrlConnectDev();
   Lib::KnobAppConf conf;
   conf.Mode = bMap[clickedButton];
+  knobUpdataModeSwitchUI(conf, true);
   Lib::HWDeviceTools tools;
   try {
     tools.SetDynamicAppinConf(devices, g_appIDTable[ui->ctrl_tabWidget_knob->currentIndex()],

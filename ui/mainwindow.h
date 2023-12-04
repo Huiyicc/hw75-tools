@@ -15,7 +15,7 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -63,9 +63,11 @@ private:
     // 切换app选项卡
     void knobEventTabChanged(int);
 
-    void knobUpdataModeSwitchUI(Lib::KnobAppConf&);
+    void knobUpdataModeSwitchUI(Lib::KnobAppConf &, bool swf = false);
+
     // 参数条拖动事件
     void knobEventSliderMoveFeedback(int);
+
     // 电机模式切换事件
     void knobEventModeSwitchClicked(bool);
 
@@ -139,6 +141,7 @@ private:
 
     // 扩展-系统设置-事件-滑块-休眠时间
     void ctrlSettingEventCtrlSleepTimeValueChanged(int value);
+
     // 扩展-系统设置-事件-更新ui数据
     void ctrlSettingEventUpdataInfos();
 

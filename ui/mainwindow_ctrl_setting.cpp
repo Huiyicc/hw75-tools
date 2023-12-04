@@ -10,7 +10,6 @@
 void MainWindow::ctrlSettingInit(QWidget *parent) {
   connect(ui->ctrl_setting_sleep_time_horizontalSlider, &QSlider::valueChanged, this,
           &MainWindow::ctrlSettingEventCtrlSleepTimeValueChanged);
-
   ctrlSettingEventUpdataInfos();
 }
 
@@ -20,6 +19,8 @@ void MainWindow::ctrlSettingEventUpdataInfos() {
 
 };
 
+bool ctrlSettingBreakValueChanged = false;
+
 void MainWindow::ctrlSettingTabChanged() {
   Lib::HWDeviceTools tools;
   if (!checkCtrlConnect()) {
@@ -28,10 +29,29 @@ void MainWindow::ctrlSettingTabChanged() {
   }
   auto devices = getCtrlConnectDev();
   auto appCfg = tools.GetDynamicSysConf(devices);
+  ctrlSettingBreakValueChanged = true;
   ui->ctrl_setting_sleep_time_horizontalSlider->setValue(appCfg.SleepTime);
   ctrlSettingEventUpdataInfos();
 }
 
 void MainWindow::ctrlSettingEventCtrlSleepTimeValueChanged(int value) {
+  if (!ctrlSettingBreakValueChanged) {
+    Lib::HWDeviceTools tools;
+    if (!checkCtrlConnect()) {
+      std::cout << "未连接设备" << std::endl;
+      return;
+    }
+    Lib::CtrlSysCfg cfg;
+    cfg.SleepTime = value;
+    auto devices = getCtrlConnectDev();
+    try {
+      tools.SetDynamicSysConf(devices, cfg);
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;
+      QMessageBox::critical(this, "错误", QString::fromStdString(e.what()));
+      exit(-1);
+    }
+  }
   ctrlSettingEventUpdataInfos();
+  ctrlSettingBreakValueChanged = false;
 }

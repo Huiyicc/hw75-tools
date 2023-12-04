@@ -183,7 +183,7 @@ KnobAppConf HWDeviceTools::GetDynamicAppinConf(const QString &devicesPath, int a
     result.torqueLimitConf.min = 0.1f;
     const auto &velocityConf = knob.velocitylimitconf();
     result.velocityLimitConf.value = velocityConf.value();
-    result.velocityLimitConf.max = 5;
+    result.velocityLimitConf.max = 15;
     result.velocityLimitConf.min = 0.4f;
     result.AddedValue = knob.addedvalue();
   }
@@ -245,8 +245,6 @@ void HWDeviceTools::SetDynamicAppinConf(const QString &devicesPath, int appId, h
     hid_close(device);
     throw DeviceException(L"推送失败");
   }
-
-
   // 关闭设备
   hid_close(device);
 };
@@ -277,6 +275,31 @@ CtrlSysCfg HWDeviceTools::GetDynamicSysConf(HWDevice &devices) {
   return result;
 }
 
+void HWDeviceTools::SetDynamicSysConf(HWDevice &devices, const CtrlSysCfg &conf) {
+  auto device = hid_open_path(devices.Path.toStdString().c_str());
+
+  if (!device) {
+    throw DeviceException(hid_error(nullptr));
+  }
+  hid::msg::PcMessage message;
+  message.set_id(hid::msg::MessageId::SET_SYS_CFG);
+  auto sc = message.mutable_sys_cfg();
+  sc->set_type(hid::msg::SetSysCfgType::SleepTime);
+  sc->set_sleeptime(conf.SleepTime);
+
+  // 发送消息
+  int result_code = sendMessage(device, message);
+  // 读取USB设备返回的字节流
+  std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
+  // 处理返回的字节流
+  if (data.get()[0] != 0x4 || data.get()[1] == 0x0) {
+    // 关闭设备
+    hid_close(device);
+    throw DeviceException(L"推送失败");
+  }
+  // 关闭设备
+  hid_close(device);
+}
 
 void HWDeviceTools::SetDynamicOLEDScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar) {
   SetDynamicOLEDScerrn(devices.Path, imageArrar);

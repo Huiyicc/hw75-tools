@@ -211,7 +211,8 @@ public:
     //---
     // 获取扩展系统配置
     CtrlSysCfg GetDynamicSysConf(HWDevice &devices);
-
+    // 设置扩展系统设置
+    void SetDynamicSysConf(HWDevice &devices,const CtrlSysCfg&conf);
     //---
     /** 设置扩展模块的OLED
     * 注意: 屏幕尺寸只有32*128, 且只能显示黑白,输入图像注意处理
