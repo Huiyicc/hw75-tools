@@ -382,7 +382,7 @@ void MainWindow::ctrlPluginSubmint(bool checked) {
 		return;
 	}
 	result["config"] = resultConfig;
-	if (!Lib::Plugin::CallPluginSubmit("ctrl", ctrl_plugin_status, to_string(resultConfig).c_str())) {
+	if (!Lib::Plugin::CallPluginSubmit("ctrl", ctrl_plugin_status, to_string(result).c_str())) {
 		MsgBox::critical(this, "错误", "插件提交事件失败\n" +
 		                               QString::fromStdString(
 				                               Lib::Plugin::CallPluginGetLastError("ctrl", ctrl_plugin_status)));
