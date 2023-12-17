@@ -83,10 +83,10 @@ std::shared_ptr<std::thread> m_pluginCallBack = std::make_shared<std::thread>([]
   std::string devPath;
   while (!stopBack) {
     DEFER(QThread::msleep(1000));
-//    if (lMainWind == nullptr) {
-//      PrintDebug("插件监听线程: 主窗口未初始化");
-//      continue;
-//    }
+    //    if (lMainWind == nullptr) {
+    //      PrintDebug("插件监听线程: 主窗口未初始化");
+    //      continue;
+    //    }
     if (devPath.empty()) {
       devPath = initDevPathFunc();
       if (devPath.empty()) {
