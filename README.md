@@ -21,7 +21,13 @@ pacman -Syy mingw64/mingw-w64-x86_64-openssl mingw64/mingw-w64-x86_64-qt6 mingw6
 ```
 
 ### MacOS
-> 你已经预先安装了Homebrew
+> 你已经预先安装了Homebrew与c++工具链
+```shell
+# 安装Homebrew
+/bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
+# 安装c++工具链
+brew install cmake gcc gdb
+```
 
 ```shell
 
