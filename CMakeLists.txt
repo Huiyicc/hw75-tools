@@ -56,11 +56,14 @@ set(PROJECT_SOURCES
         res.qrc
         ui/widget/KnobDashboard.cpp
         ui/widget/KnobDashboard.hpp
+        ui/knobaligndialog.h
+        ui/knobaligndialog.cpp
+        ui/knobaligndialog.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     if ((CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin"))
-        add_definitions(-D__APPLE__)
+        add_definitions(-D_D__APPLE__)
         qt_add_executable(hw_tools
                 MANUAL_FINALIZATION
                 MACOSX_BUNDLE
@@ -86,7 +89,6 @@ else()
     else()
         add_executable(hw_tools
                 ${PROJECT_SOURCES}
-                ui/knobaligndialog.h ui/knobaligndialog.cpp ui/knobaligndialog.ui
         )
     endif()
 endif()
@@ -96,10 +98,10 @@ target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi p
 
 if(CMAKE_HOST_UNIX)
     # linux独有库
-    add_definitions(-D__linux__)
+    add_definitions(-D_D__linux__)
 elseif(CMAKE_HOST_WIN32)
     # windows独有库
-    add_definitions(-D__WIN32__)
+    add_definitions(-D_D__WIN32__)
     target_link_libraries(hw_tools PRIVATE -lws2_32)
     set_target_properties(hw_tools PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()

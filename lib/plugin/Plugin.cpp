@@ -28,13 +28,13 @@ typedef char *(*PluginGetLastErrorFunc)();
 
 namespace Lib::Plugin {
 
-#ifdef __WIN32__
+#ifdef _D__WIN32__
 #define PLUGIN_ADDR ".win"
 #endif
-#ifdef __linux__
+#ifdef _D__linux__
 #define PLUGIN_ADDR ".linux"
 #endif
-#ifdef __APPLE__
+#ifdef _D__APPLE__
 #define PLUGIN_ADDR ".mac"
 #endif
 
