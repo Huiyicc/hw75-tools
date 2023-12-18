@@ -77,7 +77,7 @@ void PluginsInitAll(const QString &type) {
 
 PluginInfo PluginLoad(const QString &path) {
 	// 加载插件
-	PLUGINHANDLE handle = LoadPlugin(path.toStdWString().c_str());
+	PLUGINHANDLE handle = LoadPlugin(path);
 	if (handle == nullptr) {
 		throw std::runtime_error("加载插件失败");
 	}

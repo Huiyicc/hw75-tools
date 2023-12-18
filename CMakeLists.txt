@@ -64,6 +64,7 @@ set(PROJECT_SOURCES
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     if ((CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin"))
         add_definitions(-D_D__APPLE__)
+        set(OS_IS_APPLE TRUE)
         qt_add_executable(hw_tools
                 MANUAL_FINALIZATION
                 MACOSX_BUNDLE
@@ -96,7 +97,7 @@ find_package(Protobuf CONFIG REQUIRED)
 
 target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread)
 
-if(CMAKE_HOST_UNIX)
+if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
     # linux独有库
     add_definitions(-D_D__linux__)
 elseif(CMAKE_HOST_WIN32)

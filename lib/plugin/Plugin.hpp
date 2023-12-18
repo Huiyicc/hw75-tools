@@ -26,7 +26,7 @@ namespace Lib::Plugin {
 // 插件句柄
 typedef HINSTANCE PLUGINHANDLE;
 // 加载插件
-#define LoadPlugin(path) LoadLibraryW(path)
+#define LoadPlugin(path) LoadLibraryW(path.toStdWString().c_str())
 // 获取插件函数
 #define GetPluginFunc(handle, funcName) GetProcAddress(handle, funcName)
 // 卸载插件
@@ -34,7 +34,7 @@ typedef HINSTANCE PLUGINHANDLE;
 
 #else
 // 插件句柄
-typedef HINSTANCE PLUGINHANDLE;
+typedef void* PLUGINHANDLE;
 
 // 加载插件
 #define LoadPlugin(path) dlopen(path.toStdString().c_str(),RTLD_LAZY)
