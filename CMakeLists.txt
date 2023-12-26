@@ -38,27 +38,35 @@ include_directories(lib/fmt/inc)
 file(GLOB FMT_SOURCES lib/fmt/src/*.cc)
 #file(GLOB QT_SOURCES ui/*.cpp)
 
-
-set(PROJECT_SOURCES
+set(PROJECT_SOURCES_LIB
         ${CORE_SOURCES}
         ${CORE_SOURCES_WIDGET}
         ${HTTPSERVER_SOURCES}
         ${USB_SOURCES}
         ${UTILS_SOURCES}
         ${IMAGE_SOURCES}
+        ${Plugin_SOURCES}
         ${PROTOBUF_SOURCES}
         ${PROTOBUFCC_SOURCES}
-        ${Plugin_SOURCES}
         ${FMT_SOURCES}
         ${QT_SOURCES}
-        main.cpp
         ${TS_FILES}
+)
+
+set(PROJECT_SOURCES_APP
+        ${PROJECT_SOURCES_LIB}
         res.qrc
         ui/widget/KnobDashboard.cpp
         ui/widget/KnobDashboard.hpp
         ui/knobaligndialog.h
         ui/knobaligndialog.cpp
         ui/knobaligndialog.ui
+        main.cpp
+)
+
+set(PROJECT_SOURCES_IMAGE_CONVERT
+        ${PROJECT_SOURCES_LIB}
+        "./tools/ImageConvert/convert.cpp"
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -68,12 +76,22 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         qt_add_executable(hw_tools
                 MANUAL_FINALIZATION
                 MACOSX_BUNDLE
-                ${PROJECT_SOURCES}
+                ${PROJECT_SOURCES_APP}
+        )
+        qt_add_executable(ImageConvert
+                MANUAL_FINALIZATION
+                MACOSX_BUNDLE
+                ${PROJECT_SOURCES_IMAGE_CONVERT}
+
         )
     else ()
         qt_add_executable(hw_tools
                 MANUAL_FINALIZATION
-                ${PROJECT_SOURCES}
+                ${PROJECT_SOURCES_APP}
+        )
+        qt_add_executable(ImageConvert
+                MANUAL_FINALIZATION
+                ${PROJECT_SOURCES_IMAGE_CONVERT}
         )
     endif ()
     # Define target properties for Android with Qt 6 as:
@@ -82,20 +100,24 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(hw_tools SHARED
-                ${PROJECT_SOURCES}
-        )
+#        add_library(hw_tools SHARED
+#                ${PROJECT_SOURCES}
+#        )
         # Define properties for Android with Qt 5 after find_package() calls as:
         #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(hw_tools
-                ${PROJECT_SOURCES}
+                ${PROJECT_SOURCES_APP}
+        )
+        add_executable(ImageConvert
+                ${PROJECT_SOURCES_IMAGE_CONVERT}
         )
     endif()
 endif()
 find_package(Protobuf CONFIG REQUIRED)
 
 target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread)
+target_link_libraries(ImageConvert PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread)
 
 if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
     # linux独有库
@@ -104,7 +126,9 @@ elseif(CMAKE_HOST_WIN32)
     # windows独有库
     add_definitions(-D_D__WIN32__)
     target_link_libraries(hw_tools PRIVATE -lws2_32)
+    target_link_libraries(ImageConvert PRIVATE -lws2_32)
     set_target_properties(hw_tools PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(ImageConvert PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
