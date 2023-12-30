@@ -56,6 +56,10 @@ private:
     void ctrlEventTabChanged(int index);
 
     // ---扩展-电机模块---
+    // 初始化
+    void ctrlHomeInit(QWidget *parent);
+
+    // ---扩展-电机模块---
     void knobInit(QWidget *parent);
 
     void knobEventCalibration(bool checked);

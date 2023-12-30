@@ -15,6 +15,16 @@ class MainWindow {
 
 MainWindow *g_mainWind;
 
+struct Args {
+    std::string input_file;
+    std::string output_file;
+    std::string begin;
+    std::string end;
+    int width = 128;
+    int height = 296;
+    int threshold = 128;
+};
+
 // 生成指定长度的随机字符串
 std::string generateRandomString(int length) {
   // 初始化随机数生成器
@@ -33,12 +43,12 @@ std::string generateRandomString(int length) {
 }
 
 
-void outFunc(int width, int height, int threshold, const std::string &input_file, const std::string &output_file) {
+void outFunc(const Args&args) {
   // 读入图像文件
   // 打开文件
-  std::ifstream file(input_file, std::ios::binary | std::ios::ate);
+  std::ifstream file(args.input_file, std::ios::binary | std::ios::ate);
   if (!file.is_open()) {
-    throw std::runtime_error("error opening file: " + input_file);
+    throw std::runtime_error("error opening file: " + args.input_file);
   }
   // 获取文件大小
   std::streamsize size = file.tellg();
@@ -47,7 +57,7 @@ void outFunc(int width, int height, int threshold, const std::string &input_file
   std::shared_ptr<unsigned char> data(new unsigned char[size], std::default_delete<unsigned char[]>());
 
   if (!file.read(reinterpret_cast<char *>(data.get()), size)) {
-    throw std::runtime_error("Error reading file: " + input_file);
+    throw std::runtime_error("Error reading file: " + args.input_file);
   }
 
   file.close();
@@ -55,32 +65,42 @@ void outFunc(int width, int height, int threshold, const std::string &input_file
   // 创建图像对象
   QByteArray byteArray((const char *) data.get(), size);
   auto imgLib = Lib::Image(QImage::fromData(byteArray));
-  auto outData = imgLib.BinaryImgDataToBits(threshold, width, height);
+  auto outData = imgLib.BinaryImgDataToBits(args.threshold, args.width, args.height);
   // 输出流
   std::stringstream ss;
   std::string huid(generateRandomString(10));
   ss << "#ifdef _DEF_" << huid << "_\n";
   ss << "#define _DEF_" << huid << "_\n\n";
-  ss << "unsigned char* resources_data = {\n\t";
-
+  ss << "constexpr unsigned char resources_data []\n\t";
+  if (!args.begin.empty()) {
+    for (auto & i:args.begin) {
+      ss << static_cast<int>(i) << ",";
+    }
+    ss << "\n\t";
+  }
   int n = 1;
   for (auto &c: *outData) {
     ss << static_cast<int>(c) << ",";
-    if (n % 16 == 0) {
+    if (n % 32 == 0) {
       ss << "\n\t";
     }
     n++;
   }
-
+  if (!args.end.empty()) {
+    for (auto & i:args.end) {
+      ss << static_cast<int>(i) << ",";
+    }
+    ss << "\n";
+  }
   ss << "};\n";
   ss << "#endif\n";
-  std::filesystem::path path(output_file.empty() ? input_file : output_file);
+  std::filesystem::path path(args.output_file.empty() ? args.input_file : args.output_file);
   // 后缀名
   std::string fileExtension = path.extension().string();
   // 修正后缀
   fileExtension = (fileExtension != ".h" ? ".h" : fileExtension);
   // 输出文件所在的路径
-  std::string fileDirectory = output_file.empty() ? "./" : path.parent_path().string();
+  std::string fileDirectory = args.output_file.empty() ? "./" : path.parent_path().string();
   // 无后缀文件名
   std::string fileNameWithoutExtension = path.stem().string();
   // 输出文件名
@@ -102,20 +122,19 @@ void outFunc(int width, int height, int threshold, const std::string &input_file
 int parseArg(int argc, const char **argv) {
   CLI::App app{"图像取模工具"};
 
-  std::string input_file;
-  std::string output_file;
-  int img_width = 128;
-  int img_height = 296;
-  int img_threshold = 128;
-  app.add_option("-i,--input", input_file, "输入的图片文件")->check(CLI::ExistingFile)->required();
-  app.add_option("-o,--output", output_file, "输出文件 (暂时只支持h头文件),默认输出到同级目录下.");
-  app.add_option("-w,--width", img_width, "输出目标图像的宽度,默认: 128px");
-  app.add_option("-e,--height", img_height, "输出目标图像的高度,默认: 296px");
-  app.add_option("-t,--threshold", img_threshold, "输出目标图像二值化的阈值,默认: 128");
+  Args a;
+
+  app.add_option("-i,--input", a.input_file, "输入的图片文件")->check(CLI::ExistingFile)->required();
+  app.add_option("-o,--output", a.output_file, "输出文件 (暂时只支持h头文件),默认输出到同级目录下.");
+  app.add_option("-w,--width", a.width, "输出目标图像的宽度,默认: 128px");
+  app.add_option("-e,--height", a.height, "输出目标图像的高度,默认: 296px");
+  app.add_option("-t,--threshold", a.threshold, "输出目标图像二值化的阈值,默认: 128");
+  app.add_option("-b,--begin", a.begin, "输出文件前缀,文本");
+  app.add_option("-d,--end", a.end, "输出文件后缀,文本");
 
   CLI11_PARSE(app, argc, argv);
 
-  outFunc(img_width, img_height, img_threshold, input_file, output_file);
+  outFunc(a);
 
   return 0;
 }

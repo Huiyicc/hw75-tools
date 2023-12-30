@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3 -g -Wall")
 #endif ()
 
-
+add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT )
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
@@ -116,8 +116,8 @@ else()
 endif()
 find_package(Protobuf CONFIG REQUIRED)
 
-target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread)
-target_link_libraries(ImageConvert PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread)
+target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread -lssl -lcrypto)
+target_link_libraries(ImageConvert PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread -lssl -lcrypto)
 
 if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
     # linux独有库
@@ -127,6 +127,8 @@ elseif(CMAKE_HOST_WIN32)
     add_definitions(-D_D__WIN32__)
     target_link_libraries(hw_tools PRIVATE -lws2_32)
     target_link_libraries(ImageConvert PRIVATE -lws2_32)
+    target_link_libraries(hw_tools PRIVATE -lCRYPT32)
+    target_link_libraries(ImageConvert PRIVATE -lCRYPT32)
     set_target_properties(hw_tools PROPERTIES WIN32_EXECUTABLE TRUE)
     set_target_properties(ImageConvert PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()

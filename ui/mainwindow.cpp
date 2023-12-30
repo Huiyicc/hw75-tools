@@ -4,6 +4,10 @@
 #include <QMouseEvent>
 #include <QTabBar>
 #include <QMessageBox>
+#include <fmt/format.h>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -20,7 +24,18 @@ MainWindow::MainWindow(QWidget *parent)
     m_sysTrayIcon.setIcon(QIcon("://res/default/logo.ico"));
     m_sysTrayIcon.show();
 
+    // 检查res文件夹
+    if (!fs::exists("./res")) {
+      // 不存在创建
+      try {
+        fs::create_directories("./res");
+      } catch (const std::exception& e) {
+        throw std::runtime_error(fmt::format("创建res资源文件夹失败!\n{}" , e.what()));
+      }
+    }
+
     ctrlInit(parent);
+    ctrlHomeInit(parent);
     ctrlSettingInit(parent);
     knobInit(parent);
     ctrlEinkInit(parent);
@@ -29,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
-    MsgBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
+    QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
     exit(-1);
   }
 }

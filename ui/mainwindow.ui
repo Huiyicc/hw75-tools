@@ -318,6 +318,158 @@ QTabBar::tab:selected {
       <property name="currentIndex">
        <number>0</number>
       </property>
+      <widget class="QWidget" name="ctrl_tab_home">
+       <attribute name="title">
+        <string>首页</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_12">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>1001</width>
+          <height>531</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>黑体</family>
+          <pointsize>10</pointsize>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QGroupBox {
+    border: none; /* 移除边框 */
+	background:rgb(29, 37, 86);
+	color: rgb(211, 216, 237);
+	border-radius: 12px;
+
+}
+QGroupBox::title {
+	margin-top: 8px;
+	margin-left: 8px;
+}</string>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <widget class="QGroupBox" name="ctrl_setting_sleep_time_groupBox_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>261</width>
+           <height>81</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QGroupBox {
+    border: none; /* 移除边框 */
+	color:rgb(138, 144, 176);
+}
+QGroupBox::title {
+	margin-top: 8px;
+	margin-left: 18px;
+}</string>
+         </property>
+         <property name="title">
+          <string>内置固件</string>
+         </property>
+         <widget class="QLabel" name="ctrl_knob_label_feedback_3">
+          <property name="geometry">
+           <rect>
+            <x>532</x>
+            <y>26</y>
+            <width>31</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <family>黑体</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:rgb(29, 37, 86);
+color:rgb(138, 144, 176);</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+         <widget class="QWidget" name="horizontalLayoutWidget_2">
+          <property name="geometry">
+           <rect>
+            <x>40</x>
+            <y>30</y>
+            <width>211</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_7">
+             <property name="styleSheet">
+              <string notr="true">color:rgb(138, 144, 176);</string>
+             </property>
+             <property name="text">
+              <string>固件分支</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="ctrl_version_have_label_branch">
+             <property name="styleSheet">
+              <string notr="true">color:rgb(138, 144, 176);</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_9">
+             <property name="styleSheet">
+              <string notr="true">color:rgb(138, 144, 176);</string>
+             </property>
+             <property name="text">
+              <string>固件版本</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="ctrl_version_have_label_hash">
+             <property name="styleSheet">
+              <string notr="true">color:rgb(138, 144, 176);</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </widget>
+      </widget>
       <widget class="QWidget" name="ctrl_tab_knob">
        <attribute name="title">
         <string>电机</string>
@@ -2146,7 +2298,7 @@ color:rgb(138, 144, 176);</string>
            <string notr="true">color:rgb(138, 144, 176);</string>
           </property>
           <property name="text">
-           <string>GIT分支</string>
+           <string>固件分支</string>
           </property>
          </widget>
         </item>
@@ -2179,7 +2331,7 @@ color:rgb(138, 144, 176);</string>
            <string notr="true">color:rgb(138, 144, 176);</string>
           </property>
           <property name="text">
-           <string>GIT版本</string>
+           <string>固件版本</string>
           </property>
          </widget>
         </item>
