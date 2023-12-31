@@ -17,6 +17,6 @@ void MainWindow::ctrlHomeInit(QWidget *parent) {
 
 
 bool checkFirmwareVersion(int hostType) {
-  utils::HttpApis::GetFirmwareLatestInfo(hostType);
+  //utils::HttpApis::GetFirmwareLatestInfo(hostType);
   return false;
 }
