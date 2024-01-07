@@ -133,13 +133,17 @@ int parseArg(int argc, const char **argv) {
   app.add_option("-d,--end", a.end, "输出文件后缀,文本");
 
   CLI11_PARSE(app, argc, argv);
-
+  // for (int i=0;i<10;i++) {
+  //   a.input_file="C:\\Users\\19254\\Pictures\\Saved Pictures\\much\\"+std::to_string(i)+".bmp";
+  //
+  // }
   outFunc(a);
 
   return 0;
 }
 
 int main(int argc, char **argv) {
+  std::cout<<"hello"<<std::endl;
   try {
     parseArg(argc, (const char **) argv);
   } catch (const std::exception &e) {

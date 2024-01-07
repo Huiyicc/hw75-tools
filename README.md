@@ -48,3 +48,26 @@ export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/Cellar/hidapi/0.14.0/lib
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/Cellar/protobuf/21.12/lib
 
 ```
+## 构建qwt
+
+首先克隆子仓库  
+```
+git submodule update --init --recursive
+```
+使用qtcreator打开lib/qwt/qwt.pro  
+打开qwt.prf,找到`QMAKE_RPATHDIR`,删除注释  
+qtcreator切换成release模式  
+执行`qmake`  
+使用`build`构建  
+编译结果文件夹下lib文件夹内有4个文件
+```shell
+libqwt.dll.a
+libqwtd.dll.a
+qwt.dll
+qwtd.dll
+```
+将`libqwtd.a`和`libqwt.a`复制到Qt安装目录下对应的lib文件夹下  
+将编译文件夹中的lib文件夹下的`qwt.dll`和`qwtd.dll`文件复制到Qt安装目录下对应的bin文件夹下  
+将编译文件夹中的designer/plugins/designer文件夹下的qwt_designer_plugin.dll文件和libqwt_designer_plugin.a文件复制到Qtcreator安装目录下的plugins/designer文件夹下  
+在Qt安装目录下对应的include文件夹下新建Qwt文件夹  
+将主程序lib/qwt/src内文件全部复制过去

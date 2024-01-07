@@ -75,7 +75,7 @@ void MainWindow::knobInit(QWidget *parent) {
 
 
   knobEventTabChanged(0);
-
+  knobChatsInit(parent);
 }
 
 // 校准事件
@@ -89,6 +89,13 @@ void MainWindow::knobEventCalibration(bool checked) {
 void MainWindow::knobEventTabChanged(int index) {
   if (!checkCtrlConnect()) {
     std::cout << "未连接设备" << std::endl;
+    return;
+  }
+  bool isCharts = (ui->ctrl_tabWidget_knob->tabText(index) == "采样");
+  ui->groupBox_9->setVisible(!isCharts);
+  ui->groupBox_charts->setVisible(isCharts);
+  if (isCharts) {
+    // 采样窗口
     return;
   }
   if (g_appIDTable.find(index) == g_appIDTable.end()) {

@@ -12,10 +12,11 @@ bool checkFirmwareVersion(int hostType=1);
 
 // 初始化
 void MainWindow::ctrlHomeInit(QWidget *parent) {
-  checkFirmwareVersion();
+  // checkFirmwareVersion();
 }
 
 
+// 检查固件版本
 bool checkFirmwareVersion(int hostType) {
   //utils::HttpApis::GetFirmwareLatestInfo(hostType);
   return false;

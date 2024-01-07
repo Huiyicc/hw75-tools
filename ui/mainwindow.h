@@ -8,8 +8,10 @@
 #include "define.hpp"
 #include "HID/devices.hpp"
 #include "QTimer"
-
+class QwtPlot;
 struct PluginUI;
+struct sChart;
+struct sCtrlChart;
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -74,6 +76,9 @@ private:
 
     // 电机模式切换事件
     void knobEventModeSwitchClicked(bool);
+
+    // ---扩展-电机采样---
+    void knobChatsInit(QWidget *parent);
 
     // ---扩展-墨水屏控制---
     // 初始化
@@ -151,6 +156,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
+    sCtrlChart *m_ctrlKnobChart;
     QPoint z;
 
     std::map<std::string, Lib::HWDevice> m_modelConnectStatus;

@@ -47,6 +47,12 @@ HttpApis::FirmwareInfo HttpApis::GetFirmwareLatestInfo(int hostType) {
       lobj.last_assets.hex = i;
     }
   }
+  if (lobj.last_assets.uf2.name.empty() || lobj.last_assets.uf2.browser_download_url.empty()
+      || lobj.last_assets.bin.name.empty() || lobj.last_assets.bin.browser_download_url.empty()
+      || lobj.last_assets.hex.name.empty() || lobj.last_assets.hex.browser_download_url.empty()
+  ) {
+    throw std::runtime_error("获取扩展固件最新版本信息错误!");
+  }
   return lobj;
 }
 }

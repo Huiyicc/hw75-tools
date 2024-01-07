@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT )
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(TS_FILES hw_tools_zh_CN.ts)
@@ -34,6 +34,7 @@ file(GLOB IMAGE_SOURCES lib/image/*.cpp)
 file(GLOB PROTOBUF_SOURCES lib/protobuf/*.cpp)
 file(GLOB PROTOBUFCC_SOURCES lib/protobuf/*.cc)
 file(GLOB Plugin_SOURCES lib/plugin/*.cpp)
+file(GLOB QWT_SOURCES lib/qwt/*.cpp)
 include_directories(lib/fmt/inc)
 file(GLOB FMT_SOURCES lib/fmt/src/*.cc)
 #file(GLOB QT_SOURCES ui/*.cpp)
@@ -116,7 +117,7 @@ else()
 endif()
 find_package(Protobuf CONFIG REQUIRED)
 
-target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread)
+target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lQwt -lhidapi protobuf::libprotobuf -lpthread)
 target_link_libraries(ImageConvert PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread -lssl -lcrypto)
 
 if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
