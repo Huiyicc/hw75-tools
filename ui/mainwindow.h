@@ -80,6 +80,8 @@ private:
     // ---扩展-电机采样---
     void knobChatsInit(QWidget *parent);
 
+    void knobChatsEventStartSampling(bool c);
+
     // ---扩展-墨水屏控制---
     // 初始化
     void ctrlEinkInit(QWidget *parent);

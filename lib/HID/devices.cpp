@@ -384,6 +384,51 @@ void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::ve
   send_mutex.unlock();
 }
 
+HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(HWDevice &devices) {
+  HWDeviceDynamicKnobStatus result;
+  auto device = hid_open_path(devices.Path.toStdString().c_str());
+  if (!device) {
+    throw DeviceException(hid_error(nullptr));
+  }
+  send_mutex.lock();
+  hid::msg::PcMessage message;
+  message.set_id(hid::msg::MessageId::MOTOR_GET_STATUS);
+  hid::msg::Nil *nil = message.mutable_nil();
+
+  // 发送消息
+  int result_code = sendMessage(device, message,false);
+
+  // 读取USB设备返回的字节流
+  std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
+  // 处理返回的字节流
+  hid::msg::CtrlMessage ctrlMessage;
+
+  try {
+    readMessage(device, ctrlMessage, result_code);
+  } catch (const DeviceException&e) {
+    send_mutex.unlock();
+    throw e;
+  }
+  // 判断返回的消息是否为状态
+  if (!ctrlMessage.has_knob_status()) {
+    send_mutex.unlock();
+    throw DeviceException(L"message has not knob status.");
+  }
+  result.model = ctrlMessage.knob_status().knobmode();
+  result.target_voltage = ctrlMessage.knob_status().target_voltage();
+
+  result.target_velocity = ctrlMessage.knob_status().target_velocity();
+  result.current_velocity = ctrlMessage.knob_status().current_velocity();
+
+  result.current_angle = ctrlMessage.knob_status().current_angle();
+  result.target_angle = ctrlMessage.knob_status().target_angle();
+
+  // 关闭设备
+  hid_close(device);
+  send_mutex.unlock();
+  return result;
+};
+
 int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize) {
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[messageSize]);
@@ -418,8 +463,10 @@ int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message,
 };
 
 // 发送消息,外部调用禁止上锁
-int HWDeviceTools::sendMessage(hid_device_ *dev, hid::msg::PcMessage &message) {
-  send_mutex.lock();
+int HWDeviceTools::sendMessage(hid_device_ *dev, hid::msg::PcMessage &message,bool lock) {
+  if (lock) {
+    send_mutex.lock();
+  }
   std::this_thread::sleep_for(std::chrono::milliseconds(3));
   int result = 0;
   //序列化消息
@@ -471,7 +518,9 @@ int HWDeviceTools::sendMessage(hid_device_ *dev, hid::msg::PcMessage &message) {
     int result_code = hid_write(dev, reinterpret_cast<const unsigned char *>(msg_data.data()),
                                 msg_data.size());
     if (result_code < 0) {
-      send_mutex.unlock();
+      if (lock) {
+        send_mutex.unlock();
+      }
       auto err = hid_error(dev);
       // 处理发送失败的情况
       hid_close(dev);
@@ -479,7 +528,9 @@ int HWDeviceTools::sendMessage(hid_device_ *dev, hid::msg::PcMessage &message) {
     }
     result = result_code;
   }
-  send_mutex.unlock();
+  if (lock) {
+    send_mutex.unlock();
+  }
   return result;
 };
 

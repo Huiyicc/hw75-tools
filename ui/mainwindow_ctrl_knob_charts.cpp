@@ -31,33 +31,53 @@ struct sCtrlChart {
     sChart current_velocity;
     // 目标速度
     sChart target_velocity;
-//    // 目标电压
-//    sChart target_voltage;
+    // 当前电压
+    float target_voltage = 0;
 };
 
 void setPlotMarker(QwtPlot *plot) {
   auto func = [&](int y, const QColor &color) {
       auto marker = new QwtPlotMarker();
       marker->setLineStyle(QwtPlotMarker::HLine);
-      QPen linePen{color};
-      marker->setLinePen(linePen);
+      marker->setLinePen({color});
       marker->setYValue(y);
       marker->attach(plot);
   };
   // 中值线
-  func(0, QColor{211, 216, 237, 180});
+  func(0, {211, 216, 237, 180});
   // 中值线上
-  func(50, QColor{211, 216, 237, 100});
+  func(50, {211, 216, 237, 100});
   // 中值线下
-  func(-50, QColor{211, 216, 237, 100});
+  func(-50, {211, 216, 237, 100});
 }
 
 void updatePlot() {
 
 }
 
+void MainWindow::knobChatsEventStartSampling(bool c) {
+  if (c) {
+
+    try {
+      if (m_modelConnectStatus.find(HW_MODEL_NAME_CTRL) == m_modelConnectStatus.end()) {
+        // 未连接设备
+        return;
+      }
+      Lib::HWDeviceTools tools;
+      tools.GetKnobStatus(m_modelConnectStatus[HW_MODEL_NAME_CTRL]);
+      return;
+    } catch (Lib::DeviceException &e) {
+      // QMessageBox::critical(this, "错误", QString::fromStdString(e.what()));
+    } catch (std::exception &e) {
+      // QMessageBox::critical(this, "错误", QString::fromStdString(e.what()));
+    }
+
+  }
+}
+
 void MainWindow::knobChatsInit(QWidget *parent) {
   ui->groupBox_charts->setVisible(false);
+  connect(ui->ctrl_checkBox_knob_chart_info_current_angle,&QCheckBox::clicked,this,&MainWindow::knobChatsEventStartSampling);
   m_ctrlKnobChart = new sCtrlChart;
   m_ctrlKnobChart->Plot = new QwtPlot(ui->ctrl_charts_label_bg);
   // 自动刷新
@@ -81,7 +101,7 @@ void MainWindow::knobChatsInit(QWidget *parent) {
 
   setPlotMarker(m_ctrlKnobChart->Plot);
 
-  auto func = [this](sChart& c,const std::string &title,const QColor&color) {
+  auto func = [this](sChart &c, const std::string &title, const QColor &color) {
       c.curve = new QwtPlotCurve(title.c_str());
       c.curve->setCurveFitter(new QwtSplineCurveFitter);
       c.curve->setRenderHint(QwtPlotCurve::RenderAntialiased);
@@ -94,14 +114,13 @@ void MainWindow::knobChatsInit(QWidget *parent) {
       }
       c.curve->setSamples(points);
       c.curve->attach(m_ctrlKnobChart->Plot);
-      c.curve->setPen(QPen{color,2});
+      c.curve->setPen(QPen{color, 2});
       auto qlegend = new QwtLegend;
       m_ctrlKnobChart->Plot->insertLegend(qlegend, QwtPlot::BottomLegend);
   };
-  func(m_ctrlKnobChart->current_angle,"当前角度",QColor{255, 199, 69});
-  func(m_ctrlKnobChart->target_angle,"目标角度",QColor{255, 144, 69});
-  func(m_ctrlKnobChart->current_velocity,"当前速度",QColor{98, 98, 128});
-  func(m_ctrlKnobChart->target_velocity,"目标速度",QColor{148, 148, 212});
-
+  func(m_ctrlKnobChart->current_angle, "当前角度(左)", QColor{255, 199, 69});
+  func(m_ctrlKnobChart->target_angle, "目标角度(左)", QColor{255, 144, 69});
+  func(m_ctrlKnobChart->current_velocity, "当前速度(右)", QColor{98, 98, 128});
+  func(m_ctrlKnobChart->target_velocity, "目标速度(右)", QColor{148, 148, 212});
 
 }

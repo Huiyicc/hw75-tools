@@ -143,15 +143,17 @@ message knobPID {
 
 message knobStatus {
   // 时间戳
-  required int32 timestamp = 1;
+  required uint32 timestamp = 1;
+  // 模式
+  required uint32 knobMode = 2;
   // 当前角度
-  required float current_angle = 2;
+  required float current_angle = 3;
   // 目标角度
-  required float target_angle = 3;
+  required float target_angle = 4;
   // 当前速度
-  required float current_velocity = 4;
+  required float current_velocity = 5;
   // 目标速度
-  required float target_velocity = 5;
+  required float target_velocity = 6;
   // 目标电压
-  required float target_voltage = 6;
+  required float target_voltage = 7;
 }

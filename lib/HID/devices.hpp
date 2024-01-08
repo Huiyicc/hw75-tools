@@ -157,6 +157,20 @@ struct HWDeviceDynamicVersion {
     }
 };
 
+struct HWDeviceDynamicKnobStatus {
+    // 当前模式
+    uint32_t model=0;
+    // 当前角度
+    float current_angle = 0;
+    // 目标角度
+    float target_angle = 0;
+    // 当前速度
+    float current_velocity = 0;
+    // 目标速度
+    float target_velocity = 0;
+    // 当前电压
+    float target_voltage = 0;
+};
 
 // USB设备管理器的错误类
 class DeviceException : public std::runtime_error {
@@ -224,7 +238,8 @@ public:
     //---
     // 设置扩展屏幕
     void SetDynamicScerrn(int id, const QString &devicesPath, std::vector<unsigned char> &imageArrar);
-
+    //---
+    HWDeviceDynamicKnobStatus GetKnobStatus(HWDevice &devices);
 
 private:
     constexpr static int HWVID = 0xdc00;
@@ -234,7 +249,7 @@ private:
     constexpr static int HID_PAYLOAD_SIZE = HID_REPORT_COUNT - 3;
 
     // 发送消息,外部调用禁止上锁
-    int sendMessage(hid_device_ *dev, hid::msg::PcMessage &message);
+    int sendMessage(hid_device_ *dev, hid::msg::PcMessage &message,bool lock=true);
 
     int readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize);
 
