@@ -10,8 +10,9 @@
 #include "QTimer"
 class QwtPlot;
 struct PluginUI;
-struct sChart;
 struct sCtrlChart;
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -36,14 +37,13 @@ public:
 
     bool ctrlEinkPushImage(const char *data, int len);
 
-private:
-
-    bool checkCtrlConnect();
-
-    Lib::HWDevice getCtrlConnectDev();
-
     // ---扩展----
     std::shared_ptr<Lib::Image> m_userPushImage = std::make_shared<Lib::Image>();
+
+    // ---扩展-获取当前连接设备---
+    Lib::HWDevice getCtrlConnectDev();
+    // ---扩展-检查当前是否连接设备---
+    bool checkCtrlConnect();
 
     // 初始化
     void ctrlInit(QWidget *parent);
@@ -170,5 +170,7 @@ private:
 
     std::shared_ptr<QTimer> m_pluginTick;
 };
+
+extern MainWindow *g_mainWind;
 
 #endif // MAINWINDOW_H

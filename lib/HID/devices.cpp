@@ -384,7 +384,7 @@ void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::ve
   send_mutex.unlock();
 }
 
-HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(HWDevice &devices) {
+HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(const HWDevice& devices) {
   HWDeviceDynamicKnobStatus result;
   auto device = hid_open_path(devices.Path.toStdString().c_str());
   if (!device) {

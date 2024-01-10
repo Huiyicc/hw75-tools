@@ -239,7 +239,7 @@ public:
     // 设置扩展屏幕
     void SetDynamicScerrn(int id, const QString &devicesPath, std::vector<unsigned char> &imageArrar);
     //---
-    HWDeviceDynamicKnobStatus GetKnobStatus(HWDevice &devices);
+    HWDeviceDynamicKnobStatus GetKnobStatus(const HWDevice& devices);
 
 private:
     constexpr static int HWVID = 0xdc00;
