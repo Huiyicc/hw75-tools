@@ -96,6 +96,7 @@ void MainWindow::knobEventTabChanged(int index) {
   ui->groupBox_charts->setVisible(isCharts);
   if (isCharts) {
     // 采样窗口
+    knobChatsEventShowTable();
     return;
   }
   if (g_appIDTable.find(index) == g_appIDTable.end()) {

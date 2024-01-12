@@ -81,7 +81,7 @@ public:
     void knobChatsInit(QWidget *parent);
 
     void knobChatsEventStartSampling(bool c);
-
+    void knobChatsEventShowTable();
     // ---扩展-墨水屏控制---
     // 初始化
     void ctrlEinkInit(QWidget *parent);

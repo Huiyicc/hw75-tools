@@ -93,6 +93,26 @@ void MainWindow::knobChatsEventStartSampling(bool c) {
   g_KnobCtrlChart->sleepCv.notify_all();
 }
 
+void MainWindow::knobChatsEventShowTable() {
+  if (!g_KnobCtrlChart) {
+    return;
+  }
+  g_KnobCtrlChart->Plot->setAxisScale(QwtPlot::xBottom, 0, 500);
+  g_KnobCtrlChart->currentAngle.points.clear();
+  g_KnobCtrlChart->targetAngle.points.clear();
+  g_KnobCtrlChart->currentVelocity.points.clear();
+  g_KnobCtrlChart->targetVelocity.points.clear();
+  g_KnobCtrlChart->targetVoltage.points.clear();
+  g_KnobCtrlChart->Plot->replot();
+  ui->ctrl_checkBox_knob_chart_info_current_angle->setChecked(false);
+  ui->ctrl_label_knob_chart_info_current_angle->setText("0°");
+  ui->ctrl_label_knob_chart_info_current_velocity->setText("0°");
+  ui->ctrl_label_knob_chart_info_current_voltage->setText("0");
+  g_KnobCtrlChart->chatsUpdStatus = false;
+  g_KnobCtrlChart->x = 0;
+  g_KnobCtrlChart->x_old = 0;
+}
+
 void MainWindow::knobChatsInit(QWidget *parent) {
   ui->groupBox_charts->setVisible(false);
   connect(ui->ctrl_checkBox_knob_chart_info_current_angle, &QCheckBox::clicked, this,
@@ -167,9 +187,11 @@ void MainWindow::knobChatsInit(QWidget *parent) {
               auto status = tools.GetKnobStatus(g_mainWind->getCtrlConnectDev());
               sChart currentAngle;
               // 目标角度
-              g_KnobCtrlChart->currentAngle.points.push_back({g_KnobCtrlChart->x, Lib::NormalizeAngle(status.current_angle)});
+              g_KnobCtrlChart->currentAngle.points.push_back(
+                  {g_KnobCtrlChart->x, Lib::NormalizeAngle(status.current_angle)});
               // 目标角度
-              g_KnobCtrlChart->targetAngle.points.push_back({g_KnobCtrlChart->x, Lib::NormalizeAngle(status.target_angle)});
+              g_KnobCtrlChart->targetAngle.points.push_back(
+                  {g_KnobCtrlChart->x, Lib::NormalizeAngle(status.target_angle)});
               // 当前速度
               g_KnobCtrlChart->currentVelocity.points.push_back({g_KnobCtrlChart->x, status.current_velocity});
               // 目标速度
@@ -195,10 +217,12 @@ void MainWindow::knobChatsInit(QWidget *parent) {
                 g_KnobCtrlChart->x_old++;
               }
               g_KnobCtrlChart->Plot->setAxisScale(QwtPlot::xBottom, g_KnobCtrlChart->x_old, g_KnobCtrlChart->x);
-              ui->ctrl_label_knob_chart_info_current_angle->setText(QString::number(status.current_angle, 'f', 2));
+              double fAgent=float (int(status.current_angle*100)%36000)/100;
+              ui->ctrl_label_knob_chart_info_current_angle->setText(fmt::format("{:.2f}°({:.2f}°)",status.current_angle,fAgent).c_str());
               ui->ctrl_label_knob_chart_info_current_velocity->setText(
-                  QString::number(status.current_velocity, 'f', 2));
-              ui->ctrl_label_knob_chart_info_current_voltage->setText(QString::number(status.target_voltage, 'f', 2));
+                  QString::number(status.current_velocity, 'f', 2) + "°");
+              ui->ctrl_label_knob_chart_info_current_voltage->setText(
+                  QString::number(status.target_voltage, 'f', 2));
 
               updatePlot();
             } catch (Lib::DeviceException &e) {
