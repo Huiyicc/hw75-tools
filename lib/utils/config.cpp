@@ -11,11 +11,11 @@
 namespace Lib {
 config *config::m_instance = nullptr;
 
-config *config::getInstance() {
+config &config::getInstance() {
     if (m_instance == nullptr) {
         m_instance = new config();
     }
-    return m_instance;
+    return *m_instance;
 }
 
 

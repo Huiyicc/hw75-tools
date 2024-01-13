@@ -55,8 +55,8 @@ MainWindow::~MainWindow() {
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
   QWidget::mouseMoveEvent(event);
-  //QPoint y = event->globalPosition().toPoint();
-  QPoint y = event->globalPos();
+  QPoint y = event->globalPosition().toPoint();
+  // QPoint y = event->globalPos();
   QPoint x = y - z;
   this->move(x);
 }
@@ -64,8 +64,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
 void MainWindow::mousePressEvent(QMouseEvent *event) {
   QWidget::mousePressEvent(event);
   QPoint x = this->geometry().topLeft();
-  //QPoint y = event->globalPosition().toPoint();
-  QPoint y = event->globalPos();
+  QPoint y = event->globalPosition().toPoint();
+  //QPoint y = event->globalPos();
   z = y - x;
 }
 

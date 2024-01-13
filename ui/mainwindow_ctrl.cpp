@@ -15,7 +15,7 @@ void MainWindow::ctrlInit(QWidget *parent) {
     ui->ctrl_groupBox_version->setVisible(false);
     // 连接设备
     auto cfg = GetConfigInstance();
-    auto ctrlPath = cfg->getConfig().Ctrl.Path;
+    auto ctrlPath = cfg->Ctrl.Path;
     if (!ctrlPath.empty()) {
         Lib::HWDeviceTools tools;
         std::vector<Lib::HWDevice> HWDevicesList;
@@ -56,8 +56,8 @@ void MainWindow::ctrlEventSwitchDevices(bool checked) {
     }
     m_modelConnectStatus[HW_MODEL_NAME_CTRL] = HWDevicesList[*result];
     auto cfg = GetConfigInstance();
-    cfg->getConfig().Ctrl.Path = HWDevicesList[*result].Path.toStdString();
-    cfg->saveConfig();
+    cfg->Ctrl.Path = HWDevicesList[*result].Path.toStdString();
+    cfg.saveConfig();
     ctrlEventConnectDevices();
 }
 

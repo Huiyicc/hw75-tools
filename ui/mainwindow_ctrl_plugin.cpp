@@ -105,9 +105,9 @@ void MainWindow::ctrlPluginInit(QWidget *parent) {
 	auto &plugins = Lib::Plugin::GetPlugins("ctrl");
 	// 读取/初始化所有插件
 	for (auto &plugin: plugins) {
-		auto cfg = GetConfigData();
-		auto cfgIter = cfg.Ctrl.Plugins.find(plugin.second.RawName.toStdString());
-		if (cfgIter != cfg.Ctrl.Plugins.end()) {
+		auto cfg = GetConfigInstance();
+		auto cfgIter = cfg->Ctrl.Plugins.find(plugin.second.RawName.toStdString());
+		if (cfgIter != cfg->Ctrl.Plugins.end()) {
 			plugin.second.Enable = cfgIter->second.Enable;
 			if (plugin.second.Enable) {
 				Lib::Plugin::CallPluginInit("ctrl", plugin.second.RawName, plugin.second);
@@ -405,8 +405,8 @@ void MainWindow::ctrlPluginContextMenuEvent() {
 		Lib::Plugin::CallPluginUnRegister("ctrl", pluginInfo.RawName);
 	}
 	auto cfg = GetConfigInstance();
-	cfg->getConfig().Ctrl.Plugins[pluginInfo.RawName.toStdString()].Enable = pluginInfo.Enable;
-	cfg->saveConfig();
+	cfg->Ctrl.Plugins[pluginInfo.RawName.toStdString()].Enable = pluginInfo.Enable;
+	cfg.saveConfig();
 	// 更新表格
 	ui->ctrl_plugin_tableWidget_pluginlist->item(selectedIndexes[0].row(), 0)->setText(pluginInfo.Enable ? "√" : "×");
 }

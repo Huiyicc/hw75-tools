@@ -10,9 +10,17 @@
 #include "nlohmann/json.hpp"
 
 namespace utils {
-class HttpApis {
-public:
-  struct Assets {
+
+
+namespace HttpApis {
+
+enum FirmwareUpdataSource {
+    Default = 0,
+    Gitee = 1,
+    Github = 2,
+};
+
+struct Assets {
     std::string browser_download_url;
     std::string name;
 
@@ -20,9 +28,9 @@ public:
       this->browser_download_url = json.value<std::string>("browser_download_url", "");
       this->name = json.value<std::string>("name", "");
     }
-  };
+};
 
-  struct Author {
+struct Author {
     int id = 0;
     std::string login;
     std::string name;
@@ -40,6 +48,7 @@ public:
     std::string events_url;
     std::string received_events_url;
     std::string type;
+
     void FromJson(const nlohmann::json &json) {
       this->id = json.value<int>("id", 0);
       this->login = json.value<std::string>("login", "");
@@ -59,9 +68,9 @@ public:
       this->received_events_url = json.value<std::string>("received_events_url", "");
       this->type = json.value<std::string>("type", "");
     }
-  };
+};
 
-  struct FirmwareInfo {
+struct FirmwareInfo {
     int id = 0;
     std::string tag_name;
     std::string target_commitish;
@@ -72,10 +81,11 @@ public:
     std::vector<Assets> assets;
     Author author;
     struct _ {
-      Assets bin;
-      Assets hex;
-      Assets uf2;
+        Assets bin;
+        Assets hex;
+        Assets uf2;
     } last_assets;
+
     void FromJson(const nlohmann::json &json) {
       this->id = json.value<int>("id", 0);
       this->tag_name = json.value<std::string>("tag_name", "");
@@ -91,10 +101,13 @@ public:
         this->assets.push_back(assObj);
       }
     }
-  };
+};
 
-public:
-  static FirmwareInfo GetFirmwareLatestInfo(int hostType);
+// 获取最新固件版本信息
+FirmwareInfo GetCtrlFirmwareLatestInfo(FirmwareUpdataSource hostType);
+
+// 下载文件
+void DownloadFile(const std::string &url, const std::string &path);
 };
 }
 

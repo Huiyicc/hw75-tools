@@ -209,11 +209,6 @@ void MainWindow::knobChatsInit(QWidget *parent) {
                       status.target_voltage
                   ) << std::endl;
               if (g_KnobCtrlChart->targetAngle.points.size() > 500) {
-//                g_KnobCtrlChart->currentAngle.points.pop();
-//                g_KnobCtrlChart->targetAngle.points.pop();
-//                g_KnobCtrlChart->currentVelocity.points.pop();
-//                g_KnobCtrlChart->targetVelocity.points.pop();
-//                g_KnobCtrlChart->targetVoltage.points.pop();
                 g_KnobCtrlChart->x_old++;
               }
               g_KnobCtrlChart->Plot->setAxisScale(QwtPlot::xBottom, g_KnobCtrlChart->x_old, g_KnobCtrlChart->x);

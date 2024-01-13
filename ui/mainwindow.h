@@ -57,9 +57,17 @@ public:
     // 切换主选项卡
     void ctrlEventTabChanged(int index);
 
-    // ---扩展-电机模块---
+    // ---扩展-主页---
     // 初始化
     void ctrlHomeInit(QWidget *parent);
+
+    // 切换更新源选项
+    void ctrlHomeEventUpdateModeSwitchClicked(bool);
+
+    // 获取最新版本按钮事件
+    void ctrlHomeEventGetNewVersion(bool);
+    // 下载最新版本按钮事件
+    void ctrlHomeEventDownload (bool);
 
     // ---扩展-电机模块---
     void knobInit(QWidget *parent);
