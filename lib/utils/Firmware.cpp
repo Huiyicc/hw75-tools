@@ -14,7 +14,7 @@ std::string GetFirmwareTag(const std::string &FirmwarePath, const std::string &B
   // 读入文件(文件为二进制)
   std::ifstream file(FirmwarePath, std::ios::binary);
   if (!file.is_open()) {
-    return "";
+    return {};
   }
   std::string tag;
   std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -22,7 +22,7 @@ std::string GetFirmwareTag(const std::string &FirmwarePath, const std::string &B
   size_t beginPos = fileContent.find(BeginTag);
   if (beginPos == std::string::npos) {
     std::cerr << "BeginTag not found in file." << std::endl;
-    return "";
+    return {};
   }
 
   beginPos += BeginTag.length();
@@ -30,11 +30,10 @@ std::string GetFirmwareTag(const std::string &FirmwarePath, const std::string &B
   size_t endPos = fileContent.find(EndTag, beginPos);
   if (endPos == std::string::npos) {
     std::cerr << "EndTag not found in file." << std::endl;
-    return "";
+    return {};
   }
-
+  //std::stringstream{};
   return fileContent.substr(beginPos, endPos - beginPos);
-
 }
 
 

@@ -10,7 +10,7 @@
 #include "utils/config.hpp"
 #include "utils/Firmware.hpp"
 
-std::string checkCtrlLocalFirmwareVersion();
+
 
 // 初始化
 void MainWindow::ctrlHomeInit(QWidget *parent) {
@@ -23,8 +23,10 @@ void MainWindow::ctrlHomeInit(QWidget *parent) {
           &MainWindow::ctrlHomeEventGetNewVersion);
   connect(ui->ctrl_home_button_check_ctrl_get_update, &QPushButton::clicked, this,
           &MainWindow::ctrlHomeEventDownload);
-  ui->ctrl_home_version_have_label_local->setText(checkCtrlLocalFirmwareVersion().c_str());
-
+  // 检查本地版本
+  std::string localVer;
+  CheckCtrlLocalFirmwareVersion(localVer);
+  ui->ctrl_home_version_have_label_local->setText(localVer.c_str());
   auto cfg = GetConfigInstance();
   if (cfg->Ctrl.Firmware.UpdateSource == utils::HttpApis::FirmwareUpdataSource::Gitee) {
     ui->ctrl_home_update_mode_switch_gitee->setChecked(true);
@@ -115,15 +117,20 @@ void MainWindow::ctrlHomeEventDownload(bool) {
 
 
 // 检查本地固件版本
-std::string checkCtrlLocalFirmwareVersion() {
+bool MainWindow::CheckCtrlLocalFirmwareVersion(std::string& OutVer) {
   QString firmwarePath = "firmware/ctrl";
   QString firmwareFilePath = firmwarePath + "/HelloWord-Dynamic-fw.uf2";
   QFile firmwareFile(firmwareFilePath);
   if (!firmwareFile.exists()) {
-    return "未找到固件";
+    OutVer = "未找到固件";
+    return false;
   }
-  auto tagVer = utils::firmware::GetFirmwareTag(firmwareFilePath.toStdString(),
+  OutVer = utils::firmware::GetFirmwareTag(firmwareFilePath.toStdString(),
                                                 "build_version_parse_tag:{{",
                                                 "}}:build_version_parse_tag");
-  return tagVer.empty() ? "未知版本" : tagVer;
+  if (OutVer.empty()) {
+    OutVer = "未知版本";
+    return false;
+  }
+  return true;
 }

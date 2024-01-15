@@ -132,6 +132,7 @@ HWDeviceDynamicVersion HWDeviceTools::GetDynamicVersion(HWDevice &devices) {
   }
   result.GitHash = QString::fromStdString(ctrlMessage.version().githash());
   result.GitBranch = QString::fromStdString(ctrlMessage.version().gitbranch());
+  result.BuildVersion = QString::fromStdString(ctrlMessage.version().buildversion());
   // 关闭设备
   hid_close(device);
   return result;

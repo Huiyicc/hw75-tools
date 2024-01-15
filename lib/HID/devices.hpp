@@ -137,6 +137,7 @@ struct HWDeviceDynamicVersion {
     QString GitHash;
     QString GitBranch;
     QString GitVersion;
+    QString BuildVersion;
     HWDeviceDynamicFeatures Features;
 
     nlohmann::json toJson() {
@@ -144,6 +145,7 @@ struct HWDeviceDynamicVersion {
           {"git_version", GitVersion.toStdString()},
           {"git_bash",    GitBranch.toStdString()},
           {"git_hash",    GitHash.toStdString()},
+          {"build_version",    BuildVersion.toStdString()},
           {"features",    {
                               {"rgb", Features.Rgb},
                               {"eink", Features.Eink},

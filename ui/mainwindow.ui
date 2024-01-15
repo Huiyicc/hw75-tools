@@ -316,7 +316,7 @@ QTabBar::tab:selected {
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="ctrl_tab_home">
        <attribute name="title">
@@ -2003,6 +2003,51 @@ QPushButton:focus {
            <string>推送图片</string>
           </property>
          </widget>
+         <widget class="QPushButton" name="ctrl_eink_button_save_firmware">
+          <property name="geometry">
+           <rect>
+            <x>27</x>
+            <y>80</y>
+            <width>61</width>
+            <height>24</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);
+color: rgb(211, 216, 237);
+border-radius: 3px;
+border: none;</string>
+          </property>
+          <property name="text">
+           <string>制作固件</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_16">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>80</y>
+            <width>221</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <family>黑体</family>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:rgb(29, 37, 86);
+color:rgb(138, 144, 176);</string>
+          </property>
+          <property name="text">
+           <string>将图像设为扩展启动默认壁纸(导出固件)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
         </widget>
        </widget>
       </widget>
@@ -2892,7 +2937,7 @@ color:rgb(138, 144, 176);</string>
            <string notr="true">color:rgb(138, 144, 176);</string>
           </property>
           <property name="text">
-           <string>v2024.01.14</string>
+           <string/>
           </property>
          </widget>
         </item>

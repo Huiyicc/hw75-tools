@@ -70,4 +70,5 @@ void MainWindow::ctrlEventConnectDevices() {
     ui->ctrl_groupBox_version->setVisible(true);
     ui->ctrl_version_label_branch->setText(ver.GitBranch);
     ui->ctrl_version_label_hash->setText(ver.GitHash);
+    ui->ctrl_version_label_build_version->setText(ver.BuildVersion);
 }

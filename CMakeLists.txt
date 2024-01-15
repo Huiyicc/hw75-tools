@@ -83,7 +83,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
                 MANUAL_FINALIZATION
                 MACOSX_BUNDLE
                 ${PROJECT_SOURCES_IMAGE_CONVERT}
-
         )
     else ()
         qt_add_executable(hw_tools
@@ -119,6 +118,7 @@ find_package(Protobuf CONFIG REQUIRED)
 
 target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lQwt -lhidapi protobuf::libprotobuf -lpthread)
 target_link_libraries(ImageConvert PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread -lssl -lcrypto)
+# target_link_libraries(uf2conv PRIVATE )
 
 if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
     # linux独有库
@@ -175,4 +175,18 @@ install(TARGETS hw_tools
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(hw_tools)
+endif()
+
+if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
+    # linux
+
+elseif(CMAKE_HOST_WIN32)
+    # windows
+    # 结束后拷贝uf2conv.exe
+    add_custom_command(TARGET hw_tools POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/script/uf2conv.exe
+            $<TARGET_FILE_DIR:hw_tools>/uf2conv.exe)
+elseif(OS_IS_APPLE)
+
 endif()

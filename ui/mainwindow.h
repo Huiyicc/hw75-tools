@@ -37,6 +37,8 @@ public:
 
     bool ctrlEinkPushImage(const char *data, int len);
 
+    static bool CheckCtrlLocalFirmwareVersion(std::string& OutVer);
+
     // ---扩展----
     std::shared_ptr<Lib::Image> m_userPushImage = std::make_shared<Lib::Image>();
 
@@ -106,6 +108,8 @@ public:
     // 更新屏幕图片按钮事件
     void ctrlEventEinkPushImage(bool checked);
 
+    // 保存固件
+    void ctrlEventEinkSaveFirmware(bool checked);
 
     // ---扩展-OLED控制---
     // 初始化

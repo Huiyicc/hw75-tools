@@ -6,13 +6,13 @@
 #define HW_TOOLS_FIRMWARE_HPP
 
 #include<string>
+#include <sstream>
 
 namespace utils {
 
 namespace firmware {
 
 std::string GetFirmwareTag(const std::string& FirmwarePath, const std::string& BeginTag, const std::string& EndTag);
-
 
 };
 
