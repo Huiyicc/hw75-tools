@@ -6,7 +6,7 @@
 #include <map>
 #include <iostream>
 
-extern MainWindow *g_mainWind;
+extern MainWindow *g_mainWindow;
 
 namespace Lib::Plugin {
 
@@ -15,7 +15,7 @@ void CallPluginLogInfo(const char *name,const char *raw) {
 }
 
 void CallEinkFullUpdateImage(const char *data, int size) {
-	g_mainWind->ctrlEinkPushImage(data, size);
+  g_mainWindow->ctrlEinkPushImage(data, size);
 }
 
 

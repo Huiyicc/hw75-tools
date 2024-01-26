@@ -2,11 +2,12 @@
 // Created by HuiYi on 2023/5/22.
 //
 #include "devices.hpp"
+#include "QThread"
+#include "utils/defer.hpp"
+#include "utils/math.hpp"
+#include <mutex>
 #include <sstream>
 #include <thread>
-#include "utils/math.hpp"
-#include "QThread"
-#include <mutex>
 
 // hid操作id
 enum HID_OPERATE_MODE {
@@ -312,10 +313,11 @@ void HWDeviceTools::SetDynamicOLEDScerrn(const QString &devicesPath, std::vector
 
 void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::vector<unsigned char> &imageArrar) {
   send_mutex.lock();
+  DEFER(send_mutex.unlock());
   HWDeviceDynamicVersion result;
   auto device = hid_open_path(devicesPath.toStdString().c_str());
   if (!device) {
-    send_mutex.unlock();
+    //send_mutex.unlock();
     throw DeviceException(hid_error(nullptr));
   }
   std::vector<std::vector<unsigned char>> messageDatas;
@@ -341,7 +343,7 @@ void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::ve
       currentIndex += chunkSizeToCopy;
     }
   } else {
-    send_mutex.unlock();
+    //send_mutex.unlock();
     hid_close(device);
     throw DeviceException(L"image error");
   }
@@ -353,7 +355,7 @@ void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::ve
                                 msg_data.size());
     if (result_code < 0) {
       auto err = hid_error(device);
-      send_mutex.unlock();
+      //send_mutex.unlock();
       // 处理发送失败的情况
       hid_close(device);
       throw DeviceException(err);
@@ -368,7 +370,7 @@ void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::ve
     auto err = hid_error(device);
     // 关闭设备
     hid_close(device);
-    send_mutex.unlock();
+    //send_mutex.unlock();
     // 处理发送失败的情况
     hid_close(device);
     throw DeviceException(err);
@@ -376,13 +378,13 @@ void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::ve
   if (data.get()[0] != 0x4 || data.get()[1] != 0x2 || data.get()[2] != 0x2 || data.get()[2] != 0x2) {
     // 关闭设备
     hid_close(device);
-    send_mutex.unlock();
+    //send_mutex.unlock();
     hid_close(device);
     throw DeviceException(L"推送失败");
   }
   // 关闭设备
   hid_close(device);
-  send_mutex.unlock();
+  //send_mutex.unlock();
 }
 
 HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(const HWDevice& devices) {
@@ -392,6 +394,7 @@ HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(const HWDevice& devices) 
     throw DeviceException(hid_error(nullptr));
   }
   send_mutex.lock();
+  DEFER(send_mutex.unlock());
   hid::msg::PcMessage message;
   message.set_id(hid::msg::MessageId::MOTOR_GET_STATUS);
   hid::msg::Nil *nil = message.mutable_nil();
@@ -407,12 +410,12 @@ HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(const HWDevice& devices) 
   try {
     readMessage(device, ctrlMessage, result_code);
   } catch (const DeviceException&e) {
-    send_mutex.unlock();
+    //send_mutex.unlock();
     throw e;
   }
   // 判断返回的消息是否为状态
   if (!ctrlMessage.has_knob_status()) {
-    send_mutex.unlock();
+    //send_mutex.unlock();
     throw DeviceException(L"message has not knob status.");
   }
   result.model = ctrlMessage.knob_status().knobmode();
@@ -426,9 +429,55 @@ HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(const HWDevice& devices) 
 
   // 关闭设备
   hid_close(device);
-  send_mutex.unlock();
+  //send_mutex.unlock();
   return result;
 };
+
+HWDeviceDynamicRGBStatus HWDeviceTools::GetRgbConfig(const HWDevice& devices,int id) {
+  HWDeviceDynamicRGBStatus result;
+  auto device = hid_open_path(devices.Path.toStdString().c_str());
+  if (!device) {
+    throw DeviceException(hid_error(nullptr));
+  }
+  send_mutex.lock();
+  DEFER(send_mutex.unlock());
+  hid::msg::PcMessage message;
+  message.set_id(hid::msg::MessageId::GET_RGB_CONFIG);
+  hid::msg::rgbConfig *rgb = message.mutable_rgb_status();
+  rgb->set_id(id);
+  // 发送消息
+  int result_code = sendMessage(device, message,false);
+
+  // 读取USB设备返回的字节流
+  std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
+  // 处理返回的字节流
+  hid::msg::CtrlMessage ctrlMessage;
+
+  try {
+    readMessage(device, ctrlMessage, result_code);
+  } catch (const DeviceException&e) {
+    //send_mutex.unlock();
+    throw e;
+  }
+  // 判断返回的消息是否为状态
+  if (!ctrlMessage.has_rgb_status()) {
+    //send_mutex.unlock();
+    throw DeviceException(L"message has not rgb status.");
+  }
+  auto result_rgb = ctrlMessage.rgb_status();
+  result.model = result_rgb.mode();
+  auto color = result_rgb.color();
+  result.color_r = static_cast<char>((color >> 16) & 0xFF);
+  result.color_g = static_cast<char>((color >> 8) & 0xFF);
+  result.color_b = static_cast<char>(color & 0xFF);
+  result.brightness = result_rgb.brightness();
+
+
+  // 关闭设备
+  hid_close(device);
+  //send_mutex.unlock();
+  return result;
+}
 
 int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize) {
   // 读取USB设备返回的字节流

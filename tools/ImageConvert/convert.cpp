@@ -13,7 +13,7 @@
 class MainWindow {
 };
 
-MainWindow *g_mainWind;
+MainWindow *g_mainWindow;
 
 struct Args {
     std::string input_file;

@@ -22,6 +22,8 @@ enum MessageId {
   SET_SYS_CFG = 7;
   // 获取电机状态
   MOTOR_GET_STATUS = 8;
+  // 获取RGB配置
+  GET_RGB_CONFIG = 9;
 }
 
 // 扩展发来的消息
@@ -33,6 +35,7 @@ message CtrlMessage {
     Knob knob = 4;
     SysCfg sys_cfg = 5;
     knobStatus knob_status = 6;
+    rgbConfig rgb_status = 7;
   }
 }
 
@@ -45,6 +48,21 @@ message PcMessage {
     Eink eink = 4;
     Knob knob = 5;
     SysCfg sys_cfg = 6;
+    rgbConfig rgb_status = 7;
+  }
+}
+
+// 插件消息ID
+enum PluginMessageId {
+  // 按钮状态
+  BUTTON_STATUS = 1;
+}
+// 扩展发送的插件端口消息
+message CtrlPluginMessage {
+  required PluginMessageId id = 1;
+  oneof payload {
+    Nil nil = 2;
+    ButtonStatus button_status = 3;
   }
 }
 
@@ -87,6 +105,23 @@ enum SetAppType {
   VelocityLimit = 4;
   // 附加值
   AddedValue = 5;
+}
+
+enum ButtonPinCallType {
+  // 左侧按钮短按事件
+  LeftButtonPressed = 1;
+  // 右侧按钮短按事件
+  RightButtonPressed = 2;
+  // 左侧按钮长按事件
+  LeftButtonLongPress = 3;
+  // 右侧按钮长按事件
+  RightButtonLongPress = 4;
+};
+
+// 按钮状态
+message ButtonStatus {
+  // 按钮状态
+  required ButtonPinCallType status = 1;
 }
 
 // 电机消息
@@ -158,4 +193,15 @@ message knobStatus {
   required float target_velocity = 6;
   // 目标电压
   required float target_voltage = 7;
+}
+
+message rgbConfig {
+  // 灯ID
+  required uint32 id = 1;
+  // 灯模式
+  required uint32 mode = 2;
+  // 灯亮度
+  required float brightness = 3;
+  // 灯颜色
+  required uint32 color = 4;
 }

@@ -9,7 +9,7 @@
 
 std::shared_ptr<QApplication> g_app = nullptr;
 
-MainWindow *g_mainWind = nullptr;
+MainWindow *g_mainWindow = nullptr;
 
 int main(int argc, char *argv[]) {
   // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -29,10 +29,9 @@ int main(int argc, char *argv[]) {
 //    exit(-1);
 //  }
 
-  initHTTPSvr();
+  // initHTTPSvr();
 
-  static MainWindow mainWind;
-  g_mainWind = &mainWind;
+  MainWindow mainWind;
   try {
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -50,7 +49,7 @@ int main(int argc, char *argv[]) {
     QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
     exit(-1);
   }
-  g_mainWind = nullptr;
+  g_mainWindow = nullptr;
   int code = g_app->exec();
   return code;
 }
