@@ -5,6 +5,7 @@
 #include "QThread"
 #include "utils/defer.hpp"
 #include "utils/math.hpp"
+#include "utils/Log.hpp"
 #include <mutex>
 #include <sstream>
 #include <thread>
@@ -293,6 +294,13 @@ void HWDeviceTools::SetDynamicSysConf(HWDevice &devices, const CtrlSysCfg &conf)
   int result_code = sendMessage(device, message);
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
+  result_code = hid_read_timeout(device, data.get(), result_code, 300);
+  if (result_code < 0) {
+    auto err = hid_error(device);
+    // 处理发送失败的情况
+    hid_close(device);
+    throw DeviceException(err);
+  }
   // 处理返回的字节流
   if (data.get()[0] != 0x4 || data.get()[1] == 0x0) {
     // 关闭设备
@@ -471,12 +479,55 @@ HWDeviceDynamicRGBStatus HWDeviceTools::GetRgbConfig(const HWDevice& devices,int
   result.color_g = static_cast<char>((color >> 8) & 0xFF);
   result.color_b = static_cast<char>(color & 0xFF);
   result.brightness = result_rgb.brightness();
-
+  result.sleep_brightness = result_rgb.sleep_brightness();
+  result.sleep_off = result_rgb.sleep_off();
 
   // 关闭设备
   hid_close(device);
   //send_mutex.unlock();
   return result;
+}
+
+void HWDeviceTools::SetDynamicRgbConfig(const HWDevice &devices, int id, const HWDeviceDynamicRGBStatus &conf) {
+  auto device = hid_open_path(devices.Path.toStdString().c_str());
+  if (!device) {
+    throw DeviceException(hid_error(nullptr));
+  }
+  send_mutex.lock();
+  DEFER(send_mutex.unlock());
+  //DEFER(hid_close(device));
+  hid::msg::PcMessage message;
+  message.set_id(hid::msg::MessageId::SET_RGB_CONFIG);
+  hid::msg::rgbConfig *rgb = message.mutable_rgb_status();
+  rgb->set_id(id);
+  rgb->set_mode(conf.model);
+  rgb->set_color((conf.color_r << 16) | (conf.color_g << 8) | conf.color_b);
+  rgb->set_brightness(conf.brightness);
+  rgb->set_sleep_brightness(conf.sleep_brightness);
+  rgb->set_sleep_off(conf.sleep_off);
+
+  // 发送消息
+  int result_code = sendMessage(device, message,false);
+  // 读取USB设备返回的字节流
+  std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
+  result_code = hid_read_timeout(device, data.get(), result_code, 300);;
+  if (result_code < 0) {
+    auto err = hid_error(device);
+    // 处理发送失败的情况
+    hid_close(device);
+    throw DeviceException(err);
+  }
+  // 处理返回的字节流
+  if (data.get()[0] != 0x4 || data.get()[1] == 0x0) {
+    // 关闭设备
+    hid_close(device);
+    //send_mutex.unlock();
+    throw DeviceException(L"推送失败");
+  }
+  // 关闭设备
+  hid_close(device);
+  //send_mutex.unlock();
+
 }
 
 int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize) {

@@ -116,8 +116,21 @@ else()
 endif()
 find_package(Protobuf CONFIG REQUIRED)
 
-target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lQwt -lhidapi protobuf::libprotobuf -lpthread)
-target_link_libraries(ImageConvert PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread -lssl -lcrypto)
+target_link_libraries(hw_tools PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        -lQwt -lhidapi
+        protobuf::libprotobuf
+        -lpthread
+        -lssl
+        -lcrypto
+)
+target_link_libraries(ImageConvert PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        -lhidapi protobuf::libprotobuf
+        -lpthread
+        -lssl
+        -lcrypto
+)
 # target_link_libraries(uf2conv PRIVATE )
 
 if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)

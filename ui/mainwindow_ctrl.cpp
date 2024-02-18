@@ -4,6 +4,7 @@
 #include "./ui_mainwindow.h"
 #include "mainwindow.h"
 #include "ui/switchdialog.h"
+#include "utils/Log.hpp"
 #include "utils/config.hpp"
 #include <QFileDialog>
 #include <QMessageBox>
@@ -78,7 +79,7 @@ void MainWindow::ctrlEventConnectDevices() {
     MainWindow *lMainWind = g_mainWindow;
     ctrlConnectTickThread = std::make_shared<std::thread>([this, lMainWind]() {
       while (true) {
-        std::cout << "ctrlConnectTick status: " << lMainWind->checkCtrlConnect() << std::endl;
+        // PrintDebug("扩展连接Tick: {}", std::to_string(lMainWind->checkCtrlConnect()));
         if (!lMainWind->checkCtrlConnect()) {
           // 未连接设备
           // 断开设备

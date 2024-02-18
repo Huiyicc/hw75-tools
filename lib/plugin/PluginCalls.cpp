@@ -3,15 +3,16 @@
 //
 #include "Plugin.hpp"
 #include "ui/mainwindow.h"
-#include <map>
+#include "utils/Log.hpp"
 #include <iostream>
+#include <map>
 
 extern MainWindow *g_mainWindow;
 
 namespace Lib::Plugin {
 
 void CallPluginLogInfo(const char *name,const char *raw) {
-	std::cout << "["<< name <<"]PluginLogInfo:"  << raw << std::endl;
+  PrintInfo("[{}]PluginLogInfo: {}",name,raw);
 }
 
 void CallEinkFullUpdateImage(const char *data, int size) {

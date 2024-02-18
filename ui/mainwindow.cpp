@@ -1,12 +1,13 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ui/widget/MsgBox.hpp"
+#include "utils/Log.hpp"
+#include "utils/defer.hpp"
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QTabBar>
 #include <filesystem>
 #include <fmt/format.h>
-#include "utils/defer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -46,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     ctrlPluginInit(parent);
     knobChatsInit(parent);
   } catch (std::exception &e) {
-    std::cout << e.what() << std::endl;
+    PrintError("错误: {}", e.what());
     QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));
     exit(-1);
   }

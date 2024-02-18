@@ -108,8 +108,15 @@ public:
   // ---扩展-RGB---
   void ctrlRGBTabChanged();
   void ctrlRgbInit(QWidget *parent);
+  // 休眠不熄灯选择事件
   void ctrlRGBEventSleepLSettingChanged(bool);
+  // 两个灯效模块切换模式
   void ctrlRGBEventMoodModeSwitchClicked(bool);
+  // 指示灯灯序号切换
+  void ctrlRGBIndicatIndexCheckedChanged(bool state);
+  int ctrlRGBGetCurrentIndicateID();
+  int ctrlRGBGetModel(int type);
+  void ctrlEventRGBValueChanged(int value);
 
   // ---扩展-墨水屏控制---
   // 初始化

@@ -3,8 +3,9 @@
 //
 
 #include "Image.hpp"
-#include <iostream>
 #include "QBuffer"
+#include "utils/Log.hpp"
+#include <iostream>
 
 // 将一个8位二进制字符串转换为char
 char binaryStringToChar(const std::string &binaryStr) {
@@ -37,7 +38,7 @@ Image::Image(const QImage &img) {
 Image &Image::LoadToQStringByte(const QString &data) {
     QByteArray imageData = data.toUtf8(); // 将QString转换为UTF-8编码的QByteArray
     QImage image = QImage::fromData(imageData);
-    std::cout << image.size().width() << std::endl;
+    PrintDebug("LoadToQStringByte image width: {}",image.size().width());
     return *this;
 };
 

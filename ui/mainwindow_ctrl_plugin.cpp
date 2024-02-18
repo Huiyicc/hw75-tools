@@ -7,6 +7,7 @@
 #include "mainwindow.h"
 #include "plugin/Plugin.hpp"
 #include "ui/widget/MsgBox.hpp"
+#include "utils/Log.hpp"
 #include "utils/config.hpp"
 #include <QCheckBox>
 #include <QFormLayout>
@@ -180,7 +181,7 @@ void MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, Plug
   double maxWidgetWidth = 700 - 30;
   for (auto &widgetConfig: config) {
     if (!widgetConfig["type"].is_string() || !widgetConfig["text"].is_string() || !widgetConfig["layout"].is_number() || !widgetConfig["bind"].is_string()) {
-      std::cout << "faild:" << widgetConfig << std::endl;
+      PrintInfo("注册插件UI失败: {}", widgetConfig.dump());
       continue;
     }
 
@@ -254,7 +255,7 @@ void MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, Plug
       //connect(button, &QPushButton::clicked, this, &MainWindow::ctrlPluginSubmint);
 
     } else {
-      std::cout << "未知的控件类型:" << type << std::endl;
+      PrintInfo("未知的控件类型: {}", type);
       continue;
     }
 
@@ -278,7 +279,7 @@ void MainWindow::ctrlEventPluginListClicked(QModelIndex index) {
     ctrlPluginUIShow(pluginName);
     return;
   }
-  std::cout << "加载插件UI:" << pluginName.toStdString() << std::endl;
+  PrintDebug("加载插件UI: {}", pluginName.toStdString());
   // 申请插件布局
   auto uiRaw = Lib::Plugin::CallPluginConfigUI("ctrl", pluginName);
   auto uiData = nlohmann::json::parse(uiRaw);
@@ -337,18 +338,17 @@ void MainWindow::ctrlPluginSaveConfig(bool checked) {
 
 void MainWindow::ctrlPluginTickEvent() {
   // 插件Tick事件,10秒一次
-  std::cout << "插件Tick事件" << std::endl;
+  PrintInfo("插件Tick事件");
   auto plugins = Lib::Plugin::GetPlugins("ctrl");
   for (auto &plugin: plugins) {
     if (plugin.second.Enable) {
       try {
         if (!Lib::Plugin::CallPluginTimedEvent("ctrl", plugin.second.RawName)) {
-          std::cout << "插件Tick事件失败:" << plugin.second.RawName.toStdString() << std::endl;
-          std::cout << "LastError:" << Lib::Plugin::CallPluginGetLastError("ctrl", plugin.second.RawName)
-                    << std::endl;
+          PrintError("插件Tick事件失败: {}", plugin.second.RawName.toStdString());
+          PrintError("LastError: {}", Lib::Plugin::CallPluginGetLastError("ctrl", plugin.second.RawName));
         }
       } catch (std::exception &e) {
-        std::cout << "插件Tick事件异常:" << e.what() << std::endl;
+        PrintError("插件Tick事件异常: {}", e.what());
       }
     }
   }
@@ -387,6 +387,7 @@ void MainWindow::ctrlPluginContextMenuEvent() {
   if (selectedIndexes.isEmpty()) {
     return;
   }
+
   // 检查启用
   auto &pluginInfo = Lib::Plugin::GetPlugin("ctrl", selectedIndexes[2].data().toString());
   pluginInfo.Enable = !pluginInfo.Enable;

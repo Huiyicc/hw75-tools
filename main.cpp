@@ -1,11 +1,12 @@
-#include <QApplication>
-#include <QLocale>
-#include <QTranslator>
-#include <QMessageBox>
-#include <QSystemSemaphore>
-#include "ui/mainwindow.h"
 #include "http/httpsvr.hpp"
 #include "plugin/Plugin.hpp"
+#include "ui/mainwindow.h"
+#include "utils/Log.hpp"
+#include <QApplication>
+#include <QLocale>
+#include <QMessageBox>
+#include <QSystemSemaphore>
+#include <QTranslator>
 
 std::shared_ptr<QApplication> g_app = nullptr;
 
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
     mainWind.setWindowIcon(QIcon(":/res/default/logo.ico"));
     mainWind.show();
   } catch (std::exception &e) {
-    std::cout << e.what() << std::endl;
+    PrintError("错误: {}", e.what());
     QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
     exit(-1);
   }

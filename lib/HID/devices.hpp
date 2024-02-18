@@ -157,6 +157,20 @@ struct HWDeviceDynamicRGBStatus {
   uint8_t color_b = 0;
   // 当前亮度
   float brightness = 0;
+  // 休眠熄灯
+  bool sleep_off = false;
+  // 休眠后亮度
+  float sleep_brightness = 0;
+  nlohmann::json toJson() {
+    return {
+        {"model", model},
+        {"color_r", color_r},
+        {"color_g", color_g},
+        {"color_b", color_b},
+        {"brightness", brightness},
+        {"sleep_off", sleep_off},
+        {"sleep_brightness", sleep_brightness}};
+  }
 };
 
 
@@ -212,6 +226,7 @@ public:
   //---
   // 获取扩展RGB配置
   HWDeviceDynamicRGBStatus GetRgbConfig(const HWDevice &devices, int id);
+  void SetDynamicRgbConfig(const HWDevice &devices, int id, const HWDeviceDynamicRGBStatus &conf);
 
   //---
   // 获取扩展系统配置

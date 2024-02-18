@@ -20,6 +20,7 @@
 #include <Qwt/qwt_spline_curve_fitter.h>
 
 #include "fmt/format.h"
+#include "utils/Log.hpp"
 #include "utils/math.hpp"
 
 struct sChart {
@@ -121,6 +122,8 @@ void MainWindow::knobChatsEventShowTable(bool show) {
 }
 
 void MainWindow::knobChatsInit(QWidget *parent) {
+  ui->ctrl_tabWidget->setTabVisible(7,false);
+  return;
   //ui->groupBox_charts->setVisible(false);
   connect(ui->ctrl_checkBox_knob_chart_info_current_angle, &QCheckBox::clicked, this,
           &MainWindow::knobChatsEventStartSampling);
@@ -188,7 +191,6 @@ void MainWindow::knobChatsInit(QWidget *parent) {
               // 未连接设备
               continue;
             }
-            //std::cout << "upd status" << std::endl;
             g_KnobCtrlChart->x++;
             Lib::HWDeviceTools tools;
             auto status = tools.GetKnobStatus(lMainWind->getCtrlConnectDev());
@@ -205,16 +207,13 @@ void MainWindow::knobChatsInit(QWidget *parent) {
             g_KnobCtrlChart->targetVelocity.points.push_back({g_KnobCtrlChart->x, status.target_velocity});
             // 当前电压
             g_KnobCtrlChart->targetVoltage.points.push_back({g_KnobCtrlChart->x, status.target_voltage});
-            std::cout
-                << fmt::format(
-                       "convertToCoordinateSystem:{} currentAngle:{} targetAngle:{} currentVelocity:{} targetVelocity:{} targetVoltage:{}",
+            PrintDebug("convertToCoordinateSystem:{} currentAngle:{} targetAngle:{} currentVelocity:{} targetVelocity:{} targetVoltage:{}",
                        Lib::NormalizeAngle(status.current_angle),
                        Lib::NormalizeAngle(status.current_angle),
                        status.target_angle,
                        status.current_velocity,
                        status.target_velocity,
-                       status.target_voltage)
-                << std::endl;
+                       status.target_voltage);
             if (g_KnobCtrlChart->targetAngle.points.size() > 500) {
               g_KnobCtrlChart->x_old++;
             }

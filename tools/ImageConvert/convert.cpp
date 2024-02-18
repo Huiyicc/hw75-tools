@@ -1,14 +1,15 @@
 //
 // Created by 19254 on 2023/12/26.
 //
-#include <QApplication>
-#include <thread>
-#include <QThread>
-#include <iostream>
-#include <filesystem>
 #include "CLI/CLI11.hpp"
 #include "image/Image.hpp"
+#include "utils/Log.hpp"
+#include <QApplication>
+#include <QThread>
+#include <filesystem>
+#include <iostream>
 #include <random>
+#include <thread>
 
 class MainWindow {
 };
@@ -112,7 +113,7 @@ void outFunc(const Args&args) {
     outFile << ss.str();
     // 关闭文件
     outFile.close();
-    std::cout << "输出 -> " << outFileName << std::endl;
+    PrintInfo("输出 -> " + outFileName);
   } else {
     throw std::runtime_error("无法打开文件 " + outFileName + " 进行写入");
   }
@@ -143,11 +144,11 @@ int parseArg(int argc, const char **argv) {
 }
 
 int main(int argc, char **argv) {
-  std::cout<<"hello"<<std::endl;
+  PrintInfo("图像取模工具\n");
   try {
     parseArg(argc, (const char **) argv);
   } catch (const std::exception &e) {
-    std::cerr << e.what() << std::endl;
+    PrintError("错误: {}\n", e.what());
   }
   return 0;
 }

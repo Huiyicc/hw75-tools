@@ -1,13 +1,14 @@
 //
 // Created by 19254 on 2023/11/17.
 //
+#include "./ui_mainwindow.h"
+#include "knobaligndialog.h"
+#include "mainwindow.h"
+#include "ui/widget/MsgBox.hpp"
+#include "utils/Log.hpp"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QThread>
-#include "mainwindow.h"
-#include "./ui_mainwindow.h"
-#include "knobaligndialog.h"
-#include "ui/widget/MsgBox.hpp"
 
 // 扩展appid
 enum KnobAppID {
@@ -87,7 +88,7 @@ void MainWindow::knobEventCalibration(bool checked) {
 // 选项卡切换事件
 void MainWindow::knobEventTabChanged(int index) {
   if (!checkCtrlConnect()) {
-    std::cout << "未连接设备" << std::endl;
+    PrintInfo("未连接设备");
     return;
   }
   //bool isCharts = (ui->ctrl_tabWidget_knob->tabText(index) == "采样");
@@ -99,7 +100,7 @@ void MainWindow::knobEventTabChanged(int index) {
 //    return;
 //  }
   if (g_appIDTable.find(index) == g_appIDTable.end()) {
-    std::cout << "未知的应用" << std::endl;
+    PrintInfo("未知的应用");
     return;
   }
   knobTabChangedLock = true;
@@ -207,8 +208,8 @@ void MainWindow::knobEventSliderMoveFeedback(int value) {
                                 eventType, conf);
     }
   } catch (std::exception &e) {
-    std::cout << e.what() << std::endl;
-    std::cout << conf.toJson() << std::endl;
+    PrintError("错误: {}",e.what());
+    PrintDebug("附加信息: {}",conf.toJson().dump());
     MsgBox::critical(this, "错误", QString::fromStdString(e.what()));;
   }
 }
@@ -224,7 +225,7 @@ void MainWindow::knobEventModeSwitchClicked(bool checked) {
       {ui->ctrl_knob_mode_switch_4, KnobMode::MODE_DAMPED},
   };
   if (bMap.find(clickedButton) == bMap.end()) {
-    std::cout << "未知的按钮" << std::endl;
+    PrintInfo("未知的按钮");
     return;
   }
   auto devices = getCtrlConnectDev();
@@ -237,7 +238,7 @@ void MainWindow::knobEventModeSwitchClicked(bool checked) {
                               hid::msg::SetAppType::KnobMode, conf);
     QThread::msleep(5);
   } catch (std::exception &e) {
-    std::cout << e.what() << std::endl;
+    PrintError("错误: {}",e.what());
     MsgBox::critical(this, "错误", QString::fromStdString(e.what()));;
   }
 
