@@ -8,72 +8,90 @@
 #include <string>
 #include "nlohmann/json.hpp"
 
-namespace Lib{
+namespace Lib {
 
 class config {
 public:
 
-	struct AppConfigModel {
+    struct AppConfigModel {
 
-		struct CtrlModel {
-			// 扩展路径(历史)
-			std::string Path;
-			// 插件表
-			struct Plugins {
-				// 插件启用状态
-				bool Enable = false;
-				// 插件名称
-				std::string Name;
-			};
-			std::map<std::string, Plugins> Plugins;
-		} Ctrl;
+        struct CtrlModel {
+            // 插件表
+            struct Plugins {
+                // 插件启用状态
+                bool Enable = false;
+                // 插件名称
+                std::string Name;
+            };
+            // 固件相关配置
+            struct Firmware {
+                // 更新源
+                int UpdateSource=0;
+            };
+            // 扩展路径(历史保存)
+            std::string Path;
+            // 保存插件启用状态
+            std::map<std::string, Plugins> Plugins;
+            // 固件相关配置
+            Firmware Firmware;
+        } Ctrl;
 
-		void Parse(const nlohmann::json& json) {
-			if (json.contains("ctrl")) {
-				auto& ctrl = json["ctrl"];
-				if (ctrl.contains("path")) {
-					Ctrl.Path = ctrl["path"].get<std::string>();
-				}
-				if (ctrl.contains("plugins")) {
-					auto& plugins = ctrl["plugins"];
-					for (auto& iter: plugins.items()) {
-						auto val = iter.value();
-						auto& name = iter.key();
-						Ctrl.Plugins[name] = {};
-						Ctrl.Plugins[name].Enable = val["enable"].get<bool>();
-						Ctrl.Plugins[name].Name = name;
-					}
-				}
-			}
-		}
-		std::string dump() {
-			nlohmann::json json;
-			json["ctrl"]["path"] = Ctrl.Path;
-			for (auto& iter: Ctrl.Plugins) {
-				json["ctrl"]["plugins"][iter.first]["enable"] = iter.second.Enable;
-			}
-			return json.dump(4);
-		}
-	};
+        void Parse(const nlohmann::json &json) {
+          if (json.contains("ctrl")) {
+            auto &ctrl = json["ctrl"];
+            if (ctrl.contains("path")) {
+              Ctrl.Path = ctrl.value<std::string>("path","");
+            }
+            if (ctrl.contains("plugins")) {
+              auto &plugins = ctrl["plugins"];
+              for (auto &iter: plugins.items()) {
+                auto val = iter.value();
+                auto &name = iter.key();
+                Ctrl.Plugins[name] = {};
+                Ctrl.Plugins[name].Enable = val.value<bool>("enable",false);
+                Ctrl.Plugins[name].Name = name;
+              }
+            }
+            if (ctrl.contains("firmware")) {
+              Ctrl.Firmware.UpdateSource = ctrl.value<int>("firmware",0);
+            }
+          }
+        }
+
+        std::string dump() {
+          nlohmann::json json;
+          json["ctrl"]["path"] = Ctrl.Path;
+          for (auto &iter: Ctrl.Plugins) {
+            json["ctrl"]["plugins"][iter.first]["enable"] = iter.second.Enable;
+          }
+          json["ctrl"]["firmware"] = Ctrl.Firmware.UpdateSource;
+          return json.dump(4);
+        }
+    };
 
 public:
-    static config* getInstance();
+    static config &getInstance();
+
     ~config();
+
     void saveConfig();
 
-	AppConfigModel& getConfig();
+    AppConfigModel &getConfig();
 
+    AppConfigModel *operator->(){
+      return &m_config;
+    };
 
 private:
-    static config* m_instance;
+    static config *m_instance;
+
     config();
-	AppConfigModel m_config;
+
+    AppConfigModel m_config;
 };
 }
 
 #define GetConfigInstance() Lib::config::getInstance()
-#define GetConfigData() Lib::config::getInstance()->getConfig()
-
 
 
 #endif //HW_TOOLS_CONFIG_HPP

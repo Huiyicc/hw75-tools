@@ -14,6 +14,9 @@ int information(QWidget *parent, const QString &title,
 int critical(QWidget *parent, const QString &title,
              const QString &text);
 
+int question(QWidget *parent, const QString &title,
+             const QString &text);
+
 }
 
 #endif //HW_TOOLS_MSGBOX_HPP

@@ -16,9 +16,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3 -g -Wall")
 #endif ()
 
+add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT )
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+endif()
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(TS_FILES hw_tools_zh_CN.ts)
@@ -34,42 +38,64 @@ file(GLOB IMAGE_SOURCES lib/image/*.cpp)
 file(GLOB PROTOBUF_SOURCES lib/protobuf/*.cpp)
 file(GLOB PROTOBUFCC_SOURCES lib/protobuf/*.cc)
 file(GLOB Plugin_SOURCES lib/plugin/*.cpp)
+file(GLOB QWT_SOURCES lib/qwt/*.cpp)
 include_directories(lib/fmt/inc)
 file(GLOB FMT_SOURCES lib/fmt/src/*.cc)
 #file(GLOB QT_SOURCES ui/*.cpp)
 
-
-set(PROJECT_SOURCES
+set(PROJECT_SOURCES_LIB
         ${CORE_SOURCES}
         ${CORE_SOURCES_WIDGET}
         ${HTTPSERVER_SOURCES}
         ${USB_SOURCES}
         ${UTILS_SOURCES}
         ${IMAGE_SOURCES}
+        ${Plugin_SOURCES}
         ${PROTOBUF_SOURCES}
         ${PROTOBUFCC_SOURCES}
-        ${Plugin_SOURCES}
         ${FMT_SOURCES}
         ${QT_SOURCES}
-        main.cpp
         ${TS_FILES}
+)
+
+set(PROJECT_SOURCES_APP
+        ${PROJECT_SOURCES_LIB}
         res.qrc
         ui/widget/KnobDashboard.cpp
         ui/widget/KnobDashboard.hpp
+        ui/knobaligndialog.h
+        ui/knobaligndialog.cpp
+        ui/knobaligndialog.ui
+        main.cpp
+)
+
+set(PROJECT_SOURCES_IMAGE_CONVERT
+        ${PROJECT_SOURCES_LIB}
+        "./tools/ImageConvert/convert.cpp"
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     if ((CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin"))
-        add_definitions(-D__APPLE__)
+        add_definitions(-D_D__APPLE__)
+        set(OS_IS_APPLE TRUE)
         qt_add_executable(hw_tools
                 MANUAL_FINALIZATION
                 MACOSX_BUNDLE
-                ${PROJECT_SOURCES}
+                ${PROJECT_SOURCES_APP}
+        )
+        qt_add_executable(ImageConvert
+                MANUAL_FINALIZATION
+                MACOSX_BUNDLE
+                ${PROJECT_SOURCES_IMAGE_CONVERT}
         )
     else ()
         qt_add_executable(hw_tools
                 MANUAL_FINALIZATION
-                ${PROJECT_SOURCES}
+                ${PROJECT_SOURCES_APP}
+        )
+        qt_add_executable(ImageConvert
+                MANUAL_FINALIZATION
+                ${PROJECT_SOURCES_IMAGE_CONVERT}
         )
     endif ()
     # Define target properties for Android with Qt 6 as:
@@ -78,30 +104,69 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(hw_tools SHARED
-                ${PROJECT_SOURCES}
-        )
+#        add_library(hw_tools SHARED
+#                ${PROJECT_SOURCES}
+#        )
         # Define properties for Android with Qt 5 after find_package() calls as:
         #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(hw_tools
-                ${PROJECT_SOURCES}
-                ui/knobaligndialog.h ui/knobaligndialog.cpp ui/knobaligndialog.ui
+                ${PROJECT_SOURCES_APP}
+        )
+        add_executable(ImageConvert
+                ${PROJECT_SOURCES_IMAGE_CONVERT}
         )
     endif()
 endif()
 find_package(Protobuf CONFIG REQUIRED)
 
-target_link_libraries(hw_tools PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lhidapi protobuf::libprotobuf -lpthread)
+target_link_libraries(hw_tools PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        -lQwt -lhidapi
+        protobuf::libprotobuf
+        -lpthread
+        -lssl
+        -lcrypto
+)
+target_link_libraries(ImageConvert PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        -lhidapi protobuf::libprotobuf
+        -lpthread
+        -lssl
+        -lcrypto
+)
+# target_link_libraries(uf2conv PRIVATE )
 
-if(CMAKE_HOST_UNIX)
+if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
     # linux独有库
-    add_definitions(-D__linux__)
+    add_definitions(-D_D__linux__)
 elseif(CMAKE_HOST_WIN32)
     # windows独有库
-    add_definitions(-D__WIN32__)
-    target_link_libraries(hw_tools PRIVATE -lws2_32)
+    add_definitions(-D_D__WIN32__)
+    target_link_libraries(hw_tools PRIVATE
+            -lws2_32
+            -lssl
+            -lcrypto
+            -lCRYPT32
+    )
+    target_link_libraries(ImageConvert PRIVATE
+            -lws2_32
+            -lssl
+            -lcrypto
+            -lCRYPT32
+    )
     set_target_properties(hw_tools PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(ImageConvert PROPERTIES WIN32_EXECUTABLE TRUE)
+elseif(OS_IS_APPLE)
+    # mac库
+    find_package(OpenSSL REQUIRED)
+    include_directories(${OPENSSL_INCLUDE_DIR})
+    target_link_libraries(hw_tools PRIVATE
+            ${OPENSSL_LIBRARIES}
+    )
+    target_link_libraries(ImageConvert PRIVATE
+            ${OPENSSL_LIBRARIES}
+    )
 endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -127,4 +192,18 @@ install(TARGETS hw_tools
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(hw_tools)
+endif()
+
+if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
+    # linux
+
+elseif(CMAKE_HOST_WIN32)
+    # windows
+    # 结束后拷贝uf2conv.exe
+    add_custom_command(TARGET hw_tools POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/script/uf2conv.exe
+            $<TARGET_FILE_DIR:hw_tools>/uf2conv.exe)
+elseif(OS_IS_APPLE)
+
 endif()

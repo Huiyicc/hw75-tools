@@ -26,7 +26,7 @@ namespace Lib::Plugin {
 // 插件句柄
 typedef HINSTANCE PLUGINHANDLE;
 // 加载插件
-#define LoadPlugin(path) LoadLibraryW(path)
+#define LoadPlugin(path) LoadLibraryW(path.toStdWString().c_str())
 // 获取插件函数
 #define GetPluginFunc(handle, funcName) GetProcAddress(handle, funcName)
 // 卸载插件
@@ -34,7 +34,7 @@ typedef HINSTANCE PLUGINHANDLE;
 
 #else
 // 插件句柄
-typedef HINSTANCE PLUGINHANDLE;
+typedef void* PLUGINHANDLE;
 
 // 加载插件
 #define LoadPlugin(path) dlopen(path.toStdString().c_str(),RTLD_LAZY)
@@ -87,6 +87,17 @@ struct PluginInfo {
 	}
 };
 
+enum ButtonPinCallType {
+  // 左侧按钮短按事件
+  LeftButtonPressed = 1,
+  // 右侧按钮短按事件
+  RightButtonPressed = 2,
+  // 左侧按钮长按事件
+  LeftButtonLongPress = 3,
+  // 右侧按钮长按事件
+  RightButtonLongPress = 4,
+  Default = 0,
+};
 
 // 初始化插件
 void PluginsInitAll(const QString &type);
@@ -112,6 +123,10 @@ bool CallPluginSubmit(const QString &type, const QString &name, const QString &d
 std::string CallPluginGetLastError(const QString &type, const QString &name);
 
 bool CallPluginUnRegister(const QString&type, const QString&name);
+
+void CallPluginButtonPin(const QString &type,ButtonPinCallType pin);
+bool CallPluginButtonPin(const QString &type, const QString &name,ButtonPinCallType pin);
+
 
 } // Lib
 

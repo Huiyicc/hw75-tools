@@ -1,11 +1,12 @@
 //
 // Created by 19254 on 2023/12/4.
 //
-#include <QFileDialog>
-#include <QMessageBox>
-#include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "fmt/format.h"
+#include "mainwindow.h"
+#include "utils/Log.hpp"
+#include <QFileDialog>
+#include <QMessageBox>
 
 void MainWindow::ctrlSettingInit(QWidget *parent) {
   connect(ui->ctrl_setting_sleep_time_horizontalSlider, &QSlider::valueChanged, this,
@@ -24,7 +25,7 @@ bool ctrlSettingBreakValueChanged = false;
 void MainWindow::ctrlSettingTabChanged() {
   Lib::HWDeviceTools tools;
   if (!checkCtrlConnect()) {
-    std::cout << "未连接设备" << std::endl;
+    PrintInfo("未连接设备");
     return;
   }
   auto devices = getCtrlConnectDev();
@@ -38,7 +39,7 @@ void MainWindow::ctrlSettingEventCtrlSleepTimeValueChanged(int value) {
   if (!ctrlSettingBreakValueChanged) {
     Lib::HWDeviceTools tools;
     if (!checkCtrlConnect()) {
-      std::cout << "未连接设备" << std::endl;
+      PrintInfo("未连接设备");
       return;
     }
     Lib::CtrlSysCfg cfg;
@@ -47,7 +48,7 @@ void MainWindow::ctrlSettingEventCtrlSleepTimeValueChanged(int value) {
     try {
       tools.SetDynamicSysConf(devices, cfg);
     } catch (std::exception &e) {
-      std::cout << e.what() << std::endl;
+      PrintError("设置休眠时间失败:{}", e.what());
       QMessageBox::critical(this, "错误", QString::fromStdString(e.what()));
       exit(-1);
     }

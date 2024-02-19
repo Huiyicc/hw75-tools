@@ -14,6 +14,11 @@ namespace Lib {
 /** 图像处理类,非通用扩展,仅用于特化处理瀚文墨水屏图像 */
 class Image {
 public:
+    // 默认墨水屏尺寸(宽)
+    static const int EPD_WIDTH;
+    // 默认墨水屏尺寸(高)
+    static const int EPD_HEIGHT;
+public:
     Image();
 
     Image(int weight, int height);
@@ -43,6 +48,9 @@ private:
     std::shared_ptr<QImage> m_image = nullptr;
 
 };
+
+inline const int Image::EPD_WIDTH = 128;
+inline const int Image::EPD_HEIGHT = 296;
 
 } // Lib
 

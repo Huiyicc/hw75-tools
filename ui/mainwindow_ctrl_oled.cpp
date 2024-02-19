@@ -57,17 +57,6 @@ void MainWindow::ctrlEventOLEDPushImage(bool checked) {
         ui->ctrl_oled_button_pushImage->setEnabled(false);
         ui->ctrl_oled_button_pushImage->setText("推送中");
 
-//        {
-//            std::map<std::string, uint64_t> processList;
-//            Lib::ProcessList(processList);
-//            while (processList.find("YuanShen.exe")==processList.end()) {
-//                Lib::ProcessList(processList);
-//                QThread::sleep(1);
-//            }
-//        }
-//        QThread::sleep(6);
-//        std::cout<<"YuanShen.exe"<<std::endl;
-
         Lib::HWDeviceTools tools;
 
         tools.SetDynamicOLEDScerrn(m_modelConnectStatus[HW_MODEL_NAME_CTRL], *m_userPushImage->BinaryImgDataToOLEDBits(
