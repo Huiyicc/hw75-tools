@@ -177,7 +177,7 @@ void MainWindow::knobChatsInit(QWidget *parent) {
   func(m_ctrlKnobChart->currentVelocity, QwtPlot::yRight, "当前速度(右)", QColor{155, 89, 182});
   func(m_ctrlKnobChart->targetVelocity, QwtPlot::yRight, "目标速度(右)", QColor{255, 127, 39});
   // 直接使用g_mainWindow会是NULL,什么烂毛病
-  MainWindow *lMainWind = g_mainWindow;
+  MainWindow *lMainWind = g_mainWindowPtr.get();
   g_knobChatsThread = std::thread{
       [this, lMainWind]() {
         std::unique_lock<std::mutex> lock(g_KnobCtrlChart->sleepMtx);

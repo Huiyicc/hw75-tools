@@ -156,7 +156,7 @@ public:
   // --扩展-插件---
   // 初始化插件列表
   void ctrlPluginInit(QWidget *parent);
-
+  void ctrlPluginUnInit();
   // 插件列表点击事件
   void ctrlEventPluginListClicked(QModelIndex index);
 
@@ -164,7 +164,7 @@ public:
   void ctrlPluginUIShow(QString &name);
 
   // 解析插件UI
-  void
+  float
   ctrlPluginParseUI(nlohmann::json &config, QWidget *, PluginUI *pData = nullptr, bool father = false, int top = 0);
 
   // 保存插件配置
@@ -210,6 +210,6 @@ private:
   std::shared_ptr<QTimer> m_pluginTick;
 };
 
-extern  MainWindow *g_mainWindow;
+extern std::shared_ptr<MainWindow> g_mainWindowPtr;
 
 #endif// MAINWINDOW_H

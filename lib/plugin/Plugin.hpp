@@ -87,6 +87,17 @@ struct PluginInfo {
 	}
 };
 
+enum ButtonPinCallType {
+  // 左侧按钮短按事件
+  LeftButtonPressed = 1,
+  // 右侧按钮短按事件
+  RightButtonPressed = 2,
+  // 左侧按钮长按事件
+  LeftButtonLongPress = 3,
+  // 右侧按钮长按事件
+  RightButtonLongPress = 4,
+  Default = 0,
+};
 
 // 初始化插件
 void PluginsInitAll(const QString &type);
@@ -112,6 +123,10 @@ bool CallPluginSubmit(const QString &type, const QString &name, const QString &d
 std::string CallPluginGetLastError(const QString &type, const QString &name);
 
 bool CallPluginUnRegister(const QString&type, const QString&name);
+
+void CallPluginButtonPin(const QString &type,ButtonPinCallType pin);
+bool CallPluginButtonPin(const QString &type, const QString &name,ButtonPinCallType pin);
+
 
 } // Lib
 

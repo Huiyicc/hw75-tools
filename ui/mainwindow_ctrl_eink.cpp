@@ -87,7 +87,7 @@ void MainWindow::ctrlEventEinkPushImage(bool checked) {
 
 bool MainWindow::ctrlEinkPushImage(const char *data, int len) {
   try {
-    if (m_modelConnectStatus.find(HW_MODEL_NAME_CTRL) == m_modelConnectStatus.end()) {
+    if (!checkCtrlConnect()) {
       // 未连接设备
       return false;
     }

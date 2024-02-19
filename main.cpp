@@ -10,7 +10,7 @@
 
 std::shared_ptr<QApplication> g_app = nullptr;
 
-MainWindow *g_mainWindow = nullptr;
+std::shared_ptr<MainWindow> g_mainWindowPtr(nullptr, [](MainWindow* ptr) {});
 
 int main(int argc, char *argv[]) {
   // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
     exit(-1);
   }
-  g_mainWindow = nullptr;
   int code = g_app->exec();
+  g_mainWindowPtr = nullptr;
   return code;
 }

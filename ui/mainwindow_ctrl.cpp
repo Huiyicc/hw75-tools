@@ -76,11 +76,13 @@ void MainWindow::ctrlEventConnectDevices() {
   ui->ctrl_version_label_build_version->setText(ver.BuildVersion);
   if (ctrlConnectTickThread == nullptr) {
     // 插件tick事件
-    MainWindow *lMainWind = g_mainWindow;
-    ctrlConnectTickThread = std::make_shared<std::thread>([this, lMainWind]() {
+    ctrlConnectTickThread = std::make_shared<std::thread>([this]() {
       while (true) {
         // PrintDebug("扩展连接Tick: {}", std::to_string(lMainWind->checkCtrlConnect()));
-        if (!lMainWind->checkCtrlConnect()) {
+        if (g_mainWindowPtr == nullptr) {
+          continue;
+        }
+        if (!g_mainWindowPtr->checkCtrlConnect()) {
           // 未连接设备
           // 断开设备
           if (ui->systitle_button_connect->text() != "连接设备") {

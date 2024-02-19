@@ -316,7 +316,7 @@ QTabBar::tab:selected {
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="ctrl_tab_home">
        <attribute name="title">
@@ -357,8 +357,8 @@ QGroupBox::title {
         <widget class="QGroupBox" name="ctrl_setting_sleep_time_groupBox_2">
          <property name="geometry">
           <rect>
-           <x>20</x>
-           <y>30</y>
+           <x>560</x>
+           <y>50</y>
            <width>241</width>
            <height>161</height>
           </rect>
@@ -706,8 +706,8 @@ background:rgb(29, 37, 86);</string>
         <widget class="QGroupBox" name="ctrl_setting_sleep_time_groupBox_5">
          <property name="geometry">
           <rect>
-           <x>280</x>
-           <y>30</y>
+           <x>560</x>
+           <y>230</y>
            <width>241</width>
            <height>161</height>
           </rect>
@@ -1051,6 +1051,61 @@ background:rgb(29, 37, 86);</string>
            </property>
           </widget>
          </widget>
+        </widget>
+        <widget class="QLabel" name="label_8">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>60</y>
+           <width>421</width>
+           <height>361</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color:rgb(138, 144, 176);
+background:rgb(29, 37, 86);</string>
+         </property>
+         <property name="text">
+          <string># 瀚文助手
+
+### 基于瀚文键盘深度定制的上位机助手
+
+&lt;br/&gt;
+
+# 固件开源地址
+
+[Github](https://github.com/Huiyicc/HelloWord_HY)
+
+[Gitee](https://gitee.com/LoveA/HelloWord_HY)
+
+&lt;br/&gt;
+
+# 插件开发文档
+
+[Github](https://github.com/Huiyicc/HelloWord_HY/blob/master/plugindev.md)
+
+[Gitee](https://gitee.com/LoveA/HelloWord_HY/blob/master/plugindev.md)
+
+&lt;br/&gt;
+
+# 感谢
+
+[peng-zhihui/HelloWord-Keyboard](https://github.com/peng-zhihui/HelloWord-Keyboard)
+
+[libusb/hidapi](https://github.com/libusb/hidapi.git)
+
+[QWT](https://qwt.sourceforge.io/index.html)
+</string>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::MarkdownText</enum>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
         </widget>
        </widget>
       </widget>

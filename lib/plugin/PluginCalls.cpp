@@ -7,7 +7,7 @@
 #include <iostream>
 #include <map>
 
-extern MainWindow *g_mainWindow;
+extern std::shared_ptr<MainWindow> g_mainWindowPtr;
 
 namespace Lib::Plugin {
 
@@ -16,7 +16,7 @@ void CallPluginLogInfo(const char *name,const char *raw) {
 }
 
 void CallEinkFullUpdateImage(const char *data, int size) {
-  g_mainWindow->ctrlEinkPushImage(data, size);
+  g_mainWindowPtr->ctrlEinkPushImage(data, size);
 }
 
 

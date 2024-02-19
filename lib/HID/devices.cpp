@@ -64,6 +64,7 @@ HWDeviceTools::~HWDeviceTools() {
 
 size_t HWDeviceTools::GetHWDevicesList(std::vector<HWDevice> &HWDevicesList) {
   send_mutex.lock();
+  DEFER(send_mutex.unlock());
   HWDevicesList.clear();
   // 获取连接的HID设备列表
   auto devs = hid_enumerate(0x0, 0x0);
@@ -101,7 +102,7 @@ size_t HWDeviceTools::GetHWDevicesList(std::vector<HWDevice> &HWDevicesList) {
   }
   // 释放设备列表
   hid_free_enumeration(devs);
-  send_mutex.unlock();
+  //send_mutex.unlock();
   return HWDevicesList.size();
 };
 

@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   try {
-    g_mainWindow = this;
+    g_mainWindowPtr.reset(this);
     ui->setupUi(this);
     // 设置无边框
     this->setWindowFlag(Qt::FramelessWindowHint);
@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     ctrlOLEDInit(parent);
     ctrlPluginInit(parent);
     knobChatsInit(parent);
+
   } catch (std::exception &e) {
     PrintError("错误: {}", e.what());
     QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));
@@ -55,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
   delete ui;
+  ctrlPluginUnInit();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
@@ -82,6 +84,9 @@ void MainWindow::sysButtonEventMin(bool checked) {
 }
 
 bool MainWindow::checkCtrlConnect() {
+  if (m_modelConnectStatus.empty()){
+    return false;
+  }
   if (m_modelConnectStatus.find(HW_MODEL_NAME_CTRL) == m_modelConnectStatus.end()) {
     // TODO: 未连接设备
     return false;
@@ -95,6 +100,13 @@ bool MainWindow::checkCtrlConnect() {
 }
 
 Lib::HWDevice MainWindow::getCtrlConnectDev() {
+  if (m_modelConnectStatus.empty()){
+    return {};
+  }
+  if (m_modelConnectStatus.find(HW_MODEL_NAME_CTRL) == m_modelConnectStatus.end()) {
+    // 未连接设备
+    return {};
+  }
   return m_modelConnectStatus[HW_MODEL_NAME_CTRL];
 }
 

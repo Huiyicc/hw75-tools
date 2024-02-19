@@ -7,13 +7,14 @@
 #include "mainwindow.h"
 #include "plugin/Plugin.hpp"
 #include "ui/widget/MsgBox.hpp"
+#include "utils/Defer.hpp"
 #include "utils/Log.hpp"
 #include "utils/config.hpp"
 #include <QCheckBox>
+#include <QTextEdit>
 #include <QFormLayout>
 #include <QMessageBox>
 #include <cmath>
-
 
 // 插件UI类型
 enum PluginWidgetType {
@@ -27,6 +28,8 @@ enum PluginWidgetType {
   WIDGET_BUTTON,
   // 复选框
   WIDGET_CHECKBOX,
+  // 多行输入框
+  WIDGET_INPUT_ML
 };
 
 // 插件UI
@@ -49,6 +52,93 @@ struct PluginUI {
 QString ctrl_plugin_status = "";
 // 当前配置区的ui
 std::map<QString, PluginUI> ctrl_plugin_ui;
+bool stopBack = false;
+MainWindow *lMainWind = g_mainWindowPtr.get();
+
+std::shared_ptr<std::thread> m_pluginCallBack = std::make_shared<std::thread>([]() {
+  auto initDevPathFunc = []() -> std::string {
+    std::string rePath;
+
+    // 获取连接的HID设备列表
+    auto devs = hid_enumerate(Lib::HWDeviceTools::HWVID, Lib::HWDeviceTools::HWPID);
+    auto cur_dev = devs;
+
+    // 开始遍历设备列表
+    while (cur_dev) {
+      // 判断设备是否为USB HID设备
+
+      if (cur_dev->product_id == Lib::HWDeviceTools::HWPID && cur_dev->vendor_id == Lib::HWDeviceTools::HWVID// 判断是否为瀚文设备
+          && cur_dev->usage_page == Lib::HWDeviceTools::USB_USAGE_PAGE && cur_dev->usage == Lib::HWDeviceTools::USB_USAGE_PLUGIN) {
+        // 打开设备
+        auto handle = hid_open_path(cur_dev->path);
+        rePath = cur_dev->path;
+        hid_close(handle);
+      }
+      // 指向下一个设备
+      cur_dev = cur_dev->next;
+    }
+    // 释放设备列表
+    hid_free_enumeration(devs);
+    return rePath;
+  };
+  std::string devPath;
+  while (!stopBack) {
+    DEFER(QThread::msleep(1000));
+    if (lMainWind == nullptr) {
+      PrintDebug("插件监听线程: 主窗口未初始化");
+      continue;
+    }
+    if (devPath.empty()) {
+      devPath = initDevPathFunc();
+      if (devPath.empty()) {
+        QThread::msleep(5000);
+        continue;
+      }
+    }
+    try {
+      auto devHandle = hid_open_path(devPath.c_str());
+      DEFER(hid_close(devHandle));
+      if (devHandle == nullptr) {
+        devPath = "";
+        auto errMsg = QString::fromStdWString(hid_error(NULL));
+        throw std::runtime_error(errMsg.toStdString());
+      }
+      std::vector<unsigned char> buf(66, 0);
+      auto r = hid_read(devHandle, buf.data(), 66);
+      if (r <= 0) {
+        auto errMsg = QString::fromStdWString(hid_error(devHandle));
+        throw std::runtime_error(errMsg.toStdString());
+      }
+      PrintDebug("插件监听线程: 读取到数据");
+      auto dataPtr = buf.data();
+      //第一个字节为报告id,第二个字节为完整性,第三个字节为数据长度
+      if (dataPtr[0] != 0x6) {
+        throw std::runtime_error("报告ID错误");
+      }
+      if (dataPtr[1] != 0x0) {
+        throw std::runtime_error("数据完整性错误");
+      }
+      int lents = dataPtr[2];
+      if (lents > Lib::HWDeviceTools::HID_REPORT_COUNT) {
+        throw std::runtime_error("data lens is to long.");
+      }
+      // 根据长度写入流
+      google::protobuf::io::ArrayInputStream arrayInput((void *) (&dataPtr[2]), lents);
+      // 解码字节流
+      hid::msg::CtrlPluginMessage message;
+      Lib::HWDeviceTools::readDelimitedD2P(&arrayInput, &message);
+      if (message.has_button_status()) {
+        // 按钮消息
+        auto buttonStatus = message.button_status();
+        Lib::Plugin::CallPluginButtonPin("ctrl", Lib::Plugin::ButtonPinCallType(buttonStatus.status()));
+      }
+
+
+    } catch (std::exception &e) {
+      PrintError("插件监听线程异常: {}", e.what());
+    }
+  }
+});
 
 void MainWindow::ctrlPluginInit(QWidget *parent) {
   connect(ui->ctrl_plugin_button_saveconfig, &QPushButton::clicked, this, &MainWindow::ctrlPluginSaveConfig);
@@ -129,6 +219,14 @@ void MainWindow::ctrlPluginInit(QWidget *parent) {
   m_pluginTick = std::make_shared<QTimer>(this);
   connect(m_pluginTick.get(), &QTimer::timeout, this, &MainWindow::ctrlPluginTickEvent);
   m_pluginTick->start(10000);
+  lMainWind = this;
+}
+
+void MainWindow::ctrlPluginUnInit() {
+  stopBack = true;
+  m_pluginCallBack->detach();
+  m_pluginCallBack.reset();
+  m_pluginCallBack = nullptr;
 }
 
 void MainWindow::ctrlPluginUIShow(QString &name) {
@@ -156,52 +254,55 @@ void MainWindow::ctrlPluginUIShow(QString &name) {
   ui->ctrl_plugin_label_info->setText(infoStr);
 }
 
-void MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, PluginUI *pData, bool father, int top) {
+float MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, PluginUI *pData, bool father, int top) {
   if (father) {
     if (!config["widgets"].is_array()) {
-      return;
+      return 30;
     }
     // 父分组
     int lTop = 0;
     for (auto &widgetConfig: config["widgets"]) {
-      ctrlPluginParseUI(widgetConfig, widget, pData, false, lTop);
-      lTop += 30;
+      lTop += ctrlPluginParseUI(widgetConfig, widget, pData, false, lTop);
     }
     lTop += (20 + 5);
     double maxWidgetWidth = 700 - 20;
     widget->setGeometry(0, 0, maxWidgetWidth, lTop);
     widget->setVisible(false);
-    return;
+    return 30;
   }
   if (!config.is_array()) {
-    return;
+    return 30;
   }
   // 子分组
   int x = 10;
   double maxWidgetWidth = 700 - 30;
+  float maxH = 20;
   for (auto &widgetConfig: config) {
     if (!widgetConfig["type"].is_string() || !widgetConfig["text"].is_string() || !widgetConfig["layout"].is_number() || !widgetConfig["bind"].is_string()) {
       PrintInfo("注册插件UI失败: {}", widgetConfig.dump());
       continue;
     }
 
-    auto layout = widgetConfig["layout"].get<double>();
+    auto layout = widgetConfig.value<double>("layout", 8);
     auto widgetWidth = round(maxWidgetWidth * layout / 10);
-    auto type = widgetConfig["type"].get<std::string>();
-    auto bind = widgetConfig["bind"].get<std::string>();
+    auto type = widgetConfig.value<std::string>("type", "");
+    auto bind = widgetConfig.value<std::string>("bind", "");
+    auto height = widgetConfig.value<float>("height", 20);
+    height= height==0?20:height;
+    maxH = std::max(maxH, height);
     if (type == "text") {
       // 文本
       auto label = new QLabel(widget);
-      label->setGeometry(x, top, widgetWidth, 20);
-      label->setText(widgetConfig["text"].get<std::string>().c_str());
+      label->setGeometry(x, top, widgetWidth, height);
+      label->setText(widgetConfig.value<std::string>("text","").c_str());
       label->setStyleSheet("background:rgb(29, 37, 86);\n"
                            "color:rgb(138, 144, 176);");
       label->show();
     } else if (type == "input") {
       // 输入框
       auto input = new QLineEdit(widget);
-      input->setGeometry(x, top, widgetWidth, 20);
-      input->setText(widgetConfig["text"].get<std::string>().c_str());
+      input->setGeometry(x, top, widgetWidth, height);
+      input->setText(widgetConfig.value<std::string>("text","").c_str());
       input->setStyleSheet("background:rgba(75, 80, 120,1);\n"
                            "color: rgb(211, 216, 237);\n"
                            "border-radius: 3px;\n"
@@ -222,8 +323,8 @@ void MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, Plug
     } else if (type == "submit") {
       // 提交按钮
       auto button = new QPushButton(widget);
-      button->setGeometry(x, top, widgetWidth, 20);
-      button->setText(widgetConfig["text"].get<std::string>().c_str());
+      button->setGeometry(x, top, widgetWidth, height);
+      button->setText(widgetConfig.value<std::string>("text","提交").c_str());
       button->setStyleSheet("QPushButton{\n"
                             "background:qlineargradient(x1:0, y1:1, x2:1, y2:1, stop:0 #3fd38f, stop:1 #50b4cb);\n"
                             "color: rgb(211, 216, 237);\n"
@@ -243,8 +344,8 @@ void MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, Plug
     } else if (type == "checkbox") {
       // 复选框
       auto wigdet = new QCheckBox(widget);
-      wigdet->setGeometry(x, top, widgetWidth, 20);
-      wigdet->setText(widgetConfig["text"].get<std::string>().c_str());
+      wigdet->setGeometry(x, top, widgetWidth, height);
+      wigdet->setText(widgetConfig.value<std::string>("text","").c_str());
       wigdet->setStyleSheet("background:rgb(29, 37, 86); color:rgb(138, 144, 176);");
       wigdet->show();
       pData->Bind[bind.c_str()] = PluginUI::BindInfo{
@@ -254,6 +355,22 @@ void MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, Plug
       };
       //connect(button, &QPushButton::clicked, this, &MainWindow::ctrlPluginSubmint);
 
+    } else if (type == "input_ml") {
+      // 多行输入框
+      auto wigdet = new QTextEdit(widget);
+      wigdet->setGeometry(x, top, widgetWidth, height);
+      wigdet->setText(widgetConfig.value<std::string>("text","").c_str());
+      wigdet->setStyleSheet("background:rgba(75, 80, 120,1);\n"
+                            "color: rgb(211, 216, 237);\n"
+                            "border-radius: 3px;\n"
+                            "border: none;\n"
+                            "padding: 5px 5px 5px 5px;");
+      wigdet->show();
+      pData->Bind[bind.c_str()] = PluginUI::BindInfo{
+          .Widget = wigdet,
+          .BindName = bind.c_str(),
+          .WidgetType = WIDGET_INPUT_ML};
+
     } else {
       PrintInfo("未知的控件类型: {}", type);
       continue;
@@ -261,6 +378,7 @@ void MainWindow::ctrlPluginParseUI(nlohmann::json &config, QWidget *widget, Plug
 
     x += widgetWidth;
   }
+  return maxH + 10;
 }
 
 void MainWindow::ctrlEventPluginListClicked(QModelIndex index) {
@@ -316,6 +434,9 @@ nlohmann::json GetPluginConfigJsonStr() {
     if (bind.second.WidgetType == WIDGET_INPUT) {
       auto input = (QLineEdit *) bind.second.Widget;
       result[bind.first.toStdString()] = input->text().toStdString();
+    } else if (bind.second.WidgetType == WIDGET_INPUT_ML) {
+      auto input = (QTextEdit *) bind.second.Widget;
+      result[bind.first.toStdString()] = input->toPlainText().toStdString();
     } else if (bind.second.WidgetType == WIDGET_CHECKBOX) {
       auto input = (QCheckBox *) bind.second.Widget;
       result[bind.first.toStdString()] = input->isChecked();
@@ -375,7 +496,7 @@ void MainWindow::ctrlPluginSubmint(bool checked) {
     return;
   }
   result["config"] = resultConfig;
-  if (!Lib::Plugin::CallPluginSubmit("ctrl", ctrl_plugin_status, to_string(resultConfig).c_str())) {
+  if (!Lib::Plugin::CallPluginSubmit("ctrl", ctrl_plugin_status, to_string(result).c_str())) {
     MsgBox::critical(this, "错误", "插件提交事件失败\n" + QString::fromStdString(Lib::Plugin::CallPluginGetLastError("ctrl", ctrl_plugin_status)));
     return;
   }

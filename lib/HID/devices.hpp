@@ -247,21 +247,43 @@ public:
   //---
   HWDeviceDynamicKnobStatus GetKnobStatus(const HWDevice &devices);
 
-private:
   constexpr static int HWVID = 0xdc00;
   constexpr static int HWPID = 0x5750;
   constexpr static int USB_USAGE_PAGE = 0x8c;
-  constexpr static int USB_USAGE_PAGE_PLUGIN = 0x06;
+  constexpr static int USB_USAGE_PLUGIN = 0x06;
   constexpr static int HID_REPORT_COUNT = 64;
   constexpr static int HID_PAYLOAD_SIZE = HID_REPORT_COUNT - 3;
 
   // 发送消息,外部调用禁止上锁
   int sendMessage(hid_device_ *dev, hid::msg::PcMessage &message, bool lock = true);
 
-  int readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize);
+  static int readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize);
 
-  void readDelimitedD2P(google::protobuf::io::ZeroCopyInputStream *rawInput,
+  static void readDelimitedD2P(google::protobuf::io::ZeroCopyInputStream *rawInput,
                         hid::msg::CtrlMessage *message);
+  template<class T>
+  static void readDelimitedD2P(google::protobuf::io::ZeroCopyInputStream *rawInput,
+                        T *message) {
+    // 创建一个新的编码流用于每个消息。
+    google::protobuf::io::CodedInputStream input(rawInput);
+
+    // 读取消息的大小。
+    uint32_t size;
+    if (!input.ReadVarint32(&size)) {
+      throw DeviceException(L"readDelimitedFrom ReadSize 错误。");
+    }
+    // 设置流的大小限制。
+    google::protobuf::io::CodedInputStream::Limit limit = input.PushLimit(size);
+    // 解析消息。
+    if (!message->MergeFromCodedStream(&input)) {
+      throw DeviceException(L"readDelimitedFrom MergeFromCodedStream 错误。");
+    }
+    if (!input.ConsumedEntireMessage()) {
+      throw DeviceException(L"readDelimitedFrom ConsumedEntireMessage 错误。");
+    }
+    // 释放大小限制。
+    input.PopLimit(limit);
+  };
 
   void writeDelimitedP2D(const hid::msg::PcMessage &message,
                          google::protobuf::io::ZeroCopyOutputStream *rawOutput,
