@@ -74,6 +74,31 @@ set(PROJECT_SOURCES_IMAGE_CONVERT
         "./tools/ImageConvert/convert.cpp"
 )
 
+# 设置编译时间戳
+string(TIMESTAMP COMPILE_TIME %Y%m%d)
+set(build_time    ${COMPILE_TIME})
+message(STATUS "build time: ${build_time}")
+find_package(Git REQUIRED)
+# 设置GIT版本信息
+execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+        OUTPUT_VARIABLE GIT_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# 设置GIT分支信息
+execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+        OUTPUT_VARIABLE GIT_BRANCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# 设置GIT HASH
+execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        OUTPUT_VARIABLE GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+configure_file("${CMAKE_SOURCE_DIR}/build_info.h.in" "${CMAKE_SOURCE_DIR}/build_info.h")
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     if ((CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin"))
         add_definitions(-D_D__APPLE__)
@@ -127,6 +152,7 @@ target_link_libraries(hw_tools PRIVATE
         -lpthread
         -lssl
         -lcrypto
+        -lpython3.11
 )
 target_link_libraries(ImageConvert PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
@@ -199,11 +225,6 @@ if(CMAKE_HOST_UNIX  AND NOT DEFINED OS_IS_APPLE)
 
 elseif(CMAKE_HOST_WIN32)
     # windows
-    # 结束后拷贝uf2conv.exe
-    add_custom_command(TARGET hw_tools POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/script/uf2conv.exe
-            $<TARGET_FILE_DIR:hw_tools>/uf2conv.exe)
 elseif(OS_IS_APPLE)
 
 endif()

@@ -103,7 +103,7 @@ void DownloadFile(const std::string &url, const std::string &path) {
   auto lPath = GetUrlPath(url);
   httplib::Client cli(lDomain);
   cli.set_follow_location(true);
-  std::ofstream outputFile(path, std::ios::app);
+  std::ofstream outputFile(path, std::ios::binary|std::ios::trunc);
   if (!outputFile.is_open()) {
     throw std::runtime_error(fmt::format("打开文件失败!"));
   }
