@@ -6,11 +6,14 @@
 #include "mainwindow.h"
 #include "ui/widget/MsgBox.hpp"
 #include "utils/Firmware.hpp"
+#include "utils/Log.hpp"
 #include "utils/config.hpp"
 #include "utils/file.hpp"
+#include "utils/Conv.hpp"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QProcess>
+
 
 // 初始化
 void MainWindow::ctrlEinkInit(QWidget *parent) {
@@ -110,7 +113,8 @@ constexpr const char resources_data_tage_begin[] = {'H', 'Y', 'S', 'P', 'L', 'I'
 constexpr const char resources_data_tage_end[] = {'}', '}', 'L', 'I', 'P', 'S', 'Y', 'H', '\0'};
 
 bool einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int threshold = 155) {
-  QString firmwarePath = "./firmware/ctrl";
+  QString firmwarePath = QCoreApplication::applicationDirPath() + "/firmware/ctrl";
+  PrintDebug("Firmware Path: {}", firmwarePath.toStdString());
   QString firmwareFilePath = firmwarePath + "/HelloWord-Dynamic-fw.bin";
   QFile firmwareFile(firmwareFilePath);
   if (!firmwareFile.exists()) {
@@ -131,12 +135,12 @@ bool einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int t
   if (ext != ".uf2" && ext != ".bin") {
     savePath += ".uf2";
     ext = ".uf2";
-  } else if (ext==".uf2") {
-    // 检查转换器
-    auto uf2convPath = QCoreApplication::applicationDirPath()+"/uf2conv.exe";
-    if (!QFile::exists(uf2convPath)) {
-      throw std::runtime_error("找不到uf2conv转换器,请检查程序是否完整");
-    }
+  } else if (ext == ".uf2") {
+//    // 检查转换器
+//    auto uf2convPath = QCoreApplication::applicationDirPath() + "/uf2conv.exe";
+//    if (!QFile::exists(uf2convPath)) {
+//      throw std::runtime_error("找不到uf2conv转换器,请检查程序是否完整");
+//    }
   }
 
   // 读入文件(文件为二进制)
@@ -168,33 +172,17 @@ bool einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int t
   // 图片取模
   auto data = *ImgPtr->BinaryImgDataToBits(threshold);
   fileContent.replace(beginPos, endPos - beginPos, (char *) data.data(), data.size());
-
   if (ext == ".uf2") {
-    // 先写出临时bin,然后转换为uf2
-    if (!utils::files::WriteFile(savePath + ".tmp", fileContent.data(), fileContent.size())) {
-      throw std::runtime_error("写出固件失败");
-    }
-    QProcess process;
-    QString command = QCoreApplication::applicationDirPath()+"/uf2conv.exe";
-    QStringList arguments;
-    arguments << "-b"
-              << "0x8010000";
-    arguments << "-c";
-    arguments << "-f"
-              << "0x57755a57";
-    arguments << "-o"
-              << savePath;
-    arguments << savePath + ".tmp";
-    qDebug() << "Command: " << command << " Arguments: " << arguments;
-    process.start(command, arguments);
-    if (process.waitForFinished()) {
-      QFile::remove(savePath + ".tmp");
-      return true;
-    } else {
-      QFile::remove(savePath + ".tmp");
-      throw std::runtime_error("转换固件失败");
-    }
+    //uf2需要转换
+    fileContent = Lib::Convert::BinToUf2(fileContent);
   }
+  // 写入文件
+  std::ofstream saveFile(savePath.toStdString(), std::ios::binary);
+  if (!saveFile.is_open()) {
+    throw std::runtime_error("保存固件失败");
+  }
+  saveFile.write(fileContent.c_str(), fileContent.size());
+  saveFile.close();
   return true;
 };
 

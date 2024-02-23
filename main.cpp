@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QSystemSemaphore>
 #include <QTranslator>
+#include "build_info.h"
 
 std::shared_ptr<QApplication> g_app = nullptr;
 

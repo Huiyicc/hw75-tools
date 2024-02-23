@@ -67,7 +67,7 @@ void MainWindow::ctrlHomeEventGetNewVersion(bool) {
     auto cfg = GetConfigInstance();
     auto firmwareLatestInfo = utils::HttpApis::GetCtrlFirmwareLatestInfo(
         utils::HttpApis::FirmwareUpdataSource(cfg->Ctrl.Firmware.UpdateSource));
-    if (firmwareLatestInfo.last_assets.uf2.name.empty()) {
+    if (firmwareLatestInfo.last_assets.bin.name.empty()) {
       ui->ctrl_home_version_have_label_new->setText("获取失败");
       return;
     }
@@ -84,12 +84,12 @@ void MainWindow::ctrlHomeEventDownload(bool) {
     auto cfg = GetConfigInstance();
     auto firmwareLatestInfo = utils::HttpApis::GetCtrlFirmwareLatestInfo(
         utils::HttpApis::FirmwareUpdataSource(cfg->Ctrl.Firmware.UpdateSource));
-    if (firmwareLatestInfo.last_assets.uf2.name.empty()
-    || firmwareLatestInfo.last_assets.uf2.browser_download_url.empty()) {
+    if (firmwareLatestInfo.last_assets.bin.name.empty()
+    || firmwareLatestInfo.last_assets.bin.browser_download_url.empty()) {
       throw std::runtime_error("获取最新版失败");
     }
     QString firmwarePath = "firmware/ctrl";
-    QString firmwareFilePath = firmwarePath + "/HelloWord-Dynamic-fw.uf2";
+    QString firmwareFilePath = firmwarePath + "/HelloWord-Dynamic-fw.bin";
     // 检查路径是否存在
     QDir dir(firmwarePath);
     if (!dir.exists()) {
@@ -107,20 +107,25 @@ void MainWindow::ctrlHomeEventDownload(bool) {
     }
     ui->ctrl_home_version_have_label_new->setText(firmwareLatestInfo.tag_name.c_str());
     // 下载固件
-    utils::HttpApis::DownloadFile(firmwareLatestInfo.last_assets.uf2.browser_download_url,
+    utils::HttpApis::DownloadFile(firmwareLatestInfo.last_assets.bin.browser_download_url,
                                   firmwareFilePath.toStdString());
     MsgBox::information(this, "提示", "固件下载完成");
   } catch (const std::exception &e) {
     MsgBox::critical(this, "错误", QString::fromStdString(e.what()));
   }
   ui->ctrl_home_button_check_ctrl_get_update->setEnabled(true);
+  std::string localVer;
+  if (CheckCtrlLocalFirmwareVersion(localVer)) {
+    ui->ctrl_home_version_have_label_local->setText(localVer.c_str());
+  }
+
 }
 
 
 // 检查本地固件版本
 bool MainWindow::CheckCtrlLocalFirmwareVersion(std::string& OutVer) {
   QString firmwarePath = "firmware/ctrl";
-  QString firmwareFilePath = firmwarePath + "/HelloWord-Dynamic-fw.uf2";
+  QString firmwareFilePath = firmwarePath + "/HelloWord-Dynamic-fw.bin";
   QFile firmwareFile(firmwareFilePath);
   if (!firmwareFile.exists()) {
     OutVer = "未找到固件";

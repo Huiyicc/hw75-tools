@@ -5,3 +5,5 @@
 /pulish/
 /lib/protobuf/hid_msg.pb.cc
 /lib/protobuf/hid_msg.pb.h
+/build_info.h
+/CMakeLists.txt.*
