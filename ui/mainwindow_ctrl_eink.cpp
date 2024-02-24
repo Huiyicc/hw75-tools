@@ -13,7 +13,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QProcess>
-
+#include <QFile>
+#include "utils/defer.hpp"
 
 // 初始化
 void MainWindow::ctrlEinkInit(QWidget *parent) {
@@ -112,7 +113,7 @@ bool MainWindow::ctrlEinkPushImage(const char *data, int len) {
 constexpr const char resources_data_tage_begin[] = {'H', 'Y', 'S', 'P', 'L', 'I', '{', '{', '\0'};
 constexpr const char resources_data_tage_end[] = {'}', '}', 'L', 'I', 'P', 'S', 'Y', 'H', '\0'};
 
-bool einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int threshold = 155) {
+std::string einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int threshold = 155) {
   QString firmwarePath = QCoreApplication::applicationDirPath() + "/firmware/ctrl";
   PrintDebug("Firmware Path: {}", firmwarePath.toStdString());
   QString firmwareFilePath = firmwarePath + "/HelloWord-Dynamic-fw.bin";
@@ -127,7 +128,7 @@ bool einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int t
                                                   "UF2 固件 (*.uf2);;Bin固件 (*.bin)");
   if (savePath.isEmpty()) {
     // 用户取消
-    return false;
+    return "0";
   }
   // 防呆检查
   // 检查后缀
@@ -144,13 +145,22 @@ bool einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int t
   }
 
   // 读入文件(文件为二进制)
-  std::ifstream file(firmwareFilePath.toStdString(), std::ios::binary);
-  if (!file.is_open()) {
-    throw std::runtime_error(fmt::format("打开固件 {} 失败", firmwareFilePath.toStdString()));
-  }
+  // std::ifstream file(firmwareFilePath.toStdString(), std::ios::binary);
+  //  if (!file.is_open()) {
+  //    throw std::runtime_error(fmt::format("打开固件 {} 失败", firmwareFilePath.toStdString()));
+  //  }
   std::string BeginTag = resources_data_tage_begin, EndTag = resources_data_tage_end;
-  std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-  file.close();
+//  std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+//  auto file = fopen(firmwareFilePath.toStdString().c_str(), "rb");
+//  if (file == nullptr) {
+//    throw std::runtime_error(fmt::format("打开固件 {} 失败", firmwareFilePath.toStdString()));
+//  }
+//  DEFER(fclose(file));
+  auto qData = utils::files::ReadFile(firmwareFilePath);
+  std::string fileContent = qData.toStdString();
+  if (fileContent.size() != qData.size()){
+    throw std::runtime_error(fmt::format("读取固件 {} 失败", firmwareFilePath.toStdString()));
+  }
   size_t beginPos = fileContent.find(BeginTag);
   if (beginPos == std::string::npos) {
     std::cerr << "BeginTag not found in file." << std::endl;
@@ -177,13 +187,13 @@ bool einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int t
     fileContent = Lib::Convert::BinToUf2(fileContent);
   }
   // 写入文件
-  std::ofstream saveFile(savePath.toStdString(), std::ios::binary);
-  if (!saveFile.is_open()) {
-    throw std::runtime_error("保存固件失败");
+  QFile saveFile(savePath);
+  if (!saveFile.open(QIODevice::WriteOnly)) {
+    throw std::runtime_error(fmt::format("保存固件到 {} 失败", savePath.toStdString()));
   }
-  saveFile.write(fileContent.c_str(), fileContent.size());
-  saveFile.close();
-  return true;
+  DEFER(saveFile.close());
+  saveFile.write(QByteArray::fromStdString(fileContent));
+  return savePath.toStdString();
 };
 
 
@@ -197,8 +207,11 @@ void MainWindow::ctrlEventEinkSaveFirmware(bool checked) {
     if (!CheckCtrlLocalFirmwareVersion(localVer)) {
       throw std::runtime_error("获取本地固件失败");
     }
-    if (einkSaveFirmware(nullptr, m_userPushImage, ui->ctrl_eink_image_threshold_horizontalSlider->value())) {
-      MsgBox::information(this, "信息", QString::fromStdString("保存成功"));
+    auto reFile = einkSaveFirmware(nullptr, m_userPushImage, ui->ctrl_eink_image_threshold_horizontalSlider->value());
+    if (!reFile.empty()) {
+      if (reFile!="0") {
+        MsgBox::information(this, "信息", QString::fromStdString(fmt::format("保存固件到 {} 成功", reFile)));
+      }
     } else {
       MsgBox::critical(this, "错误", QString::fromStdString("保存失败"));
     }
