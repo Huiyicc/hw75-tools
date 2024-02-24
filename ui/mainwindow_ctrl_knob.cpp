@@ -91,9 +91,10 @@ void MainWindow::knobEventTabChanged(int index) {
     PrintInfo("未连接设备");
     return;
   }
+  ui->ctrl_tabWidget_knob->setEnabled(true);
   //bool isCharts = (ui->ctrl_tabWidget_knob->tabText(index) == "采样");
-  //ui->groupBox_9->setVisible(!isCharts);
-  //ui->groupBox_charts->setVisible(isCharts);
+  ui->groupBox_9->setVisible(true);
+  //ui->groupBox_charts->setVisible(true);
 //  if (isCharts) {
 //    // 采样窗口
 //    knobChatsEventShowTable();

@@ -5,11 +5,11 @@
 #include "fmt/format.h"
 #include "mainwindow.h"
 #include "ui/widget/MsgBox.hpp"
+#include "utils/Conv.hpp"
 #include "utils/Firmware.hpp"
 #include "utils/Log.hpp"
 #include "utils/config.hpp"
 #include "utils/file.hpp"
-#include "utils/Conv.hpp"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QProcess>
@@ -136,17 +136,17 @@ bool einkSaveFirmware(QWidget *parent, std::shared_ptr<Lib::Image> ImgPtr, int t
     savePath += ".uf2";
     ext = ".uf2";
   } else if (ext == ".uf2") {
-//    // 检查转换器
-//    auto uf2convPath = QCoreApplication::applicationDirPath() + "/uf2conv.exe";
-//    if (!QFile::exists(uf2convPath)) {
-//      throw std::runtime_error("找不到uf2conv转换器,请检查程序是否完整");
-//    }
+    //    // 检查转换器
+    //    auto uf2convPath = QCoreApplication::applicationDirPath() + "/uf2conv.exe";
+    //    if (!QFile::exists(uf2convPath)) {
+    //      throw std::runtime_error("找不到uf2conv转换器,请检查程序是否完整");
+    //    }
   }
 
   // 读入文件(文件为二进制)
   std::ifstream file(firmwareFilePath.toStdString(), std::ios::binary);
   if (!file.is_open()) {
-    throw std::runtime_error("打开固件失败");
+    throw std::runtime_error(fmt::format("打开固件 {} 失败", firmwareFilePath.toStdString()));
   }
   std::string BeginTag = resources_data_tage_begin, EndTag = resources_data_tage_end;
   std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
