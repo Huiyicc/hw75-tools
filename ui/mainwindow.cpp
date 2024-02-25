@@ -28,10 +28,10 @@ MainWindow::MainWindow(QWidget *parent)
     m_sysTrayIcon.show();
 
     // 检查res文件夹
-    if (!fs::exists("./res")) {
+    if (!fs::exists("res")) {
       // 不存在创建
       try {
-        fs::create_directories("./res");
+        fs::create_directories("res");
       } catch (const std::exception &e) {
         throw std::runtime_error(fmt::format("创建res资源文件夹失败!\n{}", e.what()));
       }
@@ -120,7 +120,10 @@ void MainWindow::ctrlEventTabChanged(int index) {
   if (index == TabChanged::SETTING) {
     // 扩展系统设置
     ctrlSettingTabChanged();
-  } else if (index == TabChanged::RGB) {
+  } else if (index == TabChanged::KNOB) {
+    // 扩展电机
+    knobEventTabChanged(ui->ctrl_tabWidget_knob->currentIndex());
+  }else if (index == TabChanged::RGB) {
     // 扩展RGB
     ctrlRGBTabChanged();
   } else {

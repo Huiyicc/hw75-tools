@@ -317,7 +317,7 @@ QTabBar::tab:selected {
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="ctrl_tab_home">
        <attribute name="title">
@@ -1119,7 +1119,7 @@ background:rgb(29, 37, 86);</string>
        </attribute>
        <widget class="QTabWidget" name="ctrl_tabWidget_knob">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>

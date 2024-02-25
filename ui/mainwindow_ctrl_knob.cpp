@@ -87,12 +87,15 @@ void MainWindow::knobEventCalibration(bool checked) {
 
 // 选项卡切换事件
 void MainWindow::knobEventTabChanged(int index) {
+  PrintDebug("选项卡切换事件");
   if (!checkCtrlConnect()) {
     PrintInfo("未连接设备");
     return;
   }
   ui->ctrl_tabWidget_knob->setEnabled(true);
+  ui->ctrl_tab_knob->setEnabled(true);
   //bool isCharts = (ui->ctrl_tabWidget_knob->tabText(index) == "采样");
+  ui->groupBox_9->setEnabled(true);
   ui->groupBox_9->setVisible(true);
   //ui->groupBox_charts->setVisible(true);
 //  if (isCharts) {
