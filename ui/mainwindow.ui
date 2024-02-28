@@ -1119,7 +1119,7 @@ background:rgb(29, 37, 86);</string>
        </attribute>
        <widget class="QTabWidget" name="ctrl_tabWidget_knob">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="geometry">
          <rect>
@@ -1231,6 +1231,9 @@ QPushButton:focus {
         </property>
        </widget>
        <widget class="QGroupBox" name="groupBox_9">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>10</x>
