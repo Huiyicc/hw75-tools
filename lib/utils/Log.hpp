@@ -5,14 +5,15 @@
 #ifndef HW_TOOLS_LOG_HPP
 #define HW_TOOLS_LOG_HPP
 #include "fmt/format.h"
+#include <ctime>
 
 namespace utils::log {
 
 #define PrintInfo(fstr, ...)                                                                                \
   do {                                                                                                      \
-    auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());                      \
-    std::tm tm_info = {0};                                                                                  \
-    localtime_s(&tm_info, &now);                                                                            \
+    auto now = time(nullptr);                      \
+    struct tm tm_info = {0};                                                                                  \
+    localtime_r(&now, &tm_info);                                                                            \
     char time_str[32];                                                                                      \
     strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &tm_info);                                    \
     std::string lstr = "<I> <{}> [{}:{}] ";                                                                 \
@@ -21,9 +22,9 @@ namespace utils::log {
 
 #define PrintDebug(fstr, ...)                                                          \
   do {                                                                                 \
-    auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); \
-    std::tm tm_info = {0};                                                             \
-    localtime_s(&tm_info, &now);                                                       \
+    auto now = time(nullptr);                      \
+    struct tm tm_info = {0};                                                                                  \
+    localtime_r(&now, &tm_info);                                                                            \
     char time_str[32];                                                                 \
     strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &tm_info);               \
     std::string lstr = "<D> <{}> [{}:{}] ";                                            \
@@ -32,9 +33,9 @@ namespace utils::log {
 
 #define PrintError(fstr, ...)                                                          \
   do {                                                                                 \
-    auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); \
-    std::tm tm_info = {0};                                                             \
-    localtime_s(&tm_info, &now);                                                       \
+    auto now = time(nullptr);                      \
+    struct tm tm_info = {0};                                                                                  \
+    localtime_r(&now, &tm_info);                                                                            \
     char time_str[32];                                                                 \
     strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &tm_info);               \
     std::string lstr = "<E> <{}> [{}:{}] ";                                            \

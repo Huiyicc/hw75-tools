@@ -7,3 +7,4 @@
 /lib/protobuf/hid_msg.pb.h
 /build_info.h
 /CMakeLists.txt.*
+/lib/build-*/

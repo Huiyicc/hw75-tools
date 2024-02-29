@@ -147,19 +147,15 @@ find_package(Protobuf CONFIG REQUIRED)
 
 target_link_libraries(hw_tools PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
-        -lQwt -lhidapi
+        -lhidapi
         protobuf::libprotobuf
         -lpthread
-        -lssl
-        -lcrypto
-        -lpython3.11
 )
 target_link_libraries(ImageConvert PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
-        -lhidapi protobuf::libprotobuf
+        -lhidapi
+        protobuf::libprotobuf
         -lpthread
-        -lssl
-        -lcrypto
 )
 # target_link_libraries(uf2conv PRIVATE )
 
@@ -170,6 +166,7 @@ elseif(CMAKE_HOST_WIN32)
     # windows独有库
     add_definitions(-D_D__WIN32__)
     target_link_libraries(hw_tools PRIVATE
+            -lQwt
             -lws2_32
             -lssl
             -lcrypto
@@ -187,10 +184,17 @@ elseif(OS_IS_APPLE)
     # mac库
     find_package(OpenSSL REQUIRED)
     include_directories(${OPENSSL_INCLUDE_DIR})
+    find_library( QWT NAMES qwt qwt6 PATHS /usr/local/Cellar/qwt/6.2.0_1/lib REQUIRED )
+
     target_link_libraries(hw_tools PRIVATE
+            -lssl
+            -lcrypto
             ${OPENSSL_LIBRARIES}
+            ${QWT}
     )
     target_link_libraries(ImageConvert PRIVATE
+            -lssl
+            -lcrypto
             ${OPENSSL_LIBRARIES}
     )
 endif()
@@ -228,21 +232,3 @@ elseif(CMAKE_HOST_WIN32)
 elseif(OS_IS_APPLE)
 
 endif()
-
-#We agreed to the Qt open source license for you.
-#If this is unacceptable you should uninstall.
-#
-#You can add Homebrew's Qt to QtCreator's "Qt Versions" in:
-#  Preferences > Qt Versions > Link with Qt...
-#pressing "Choose..." and selecting as the Qt installation path:
-#  /usr/local/opt/qt@5
-#
-#qt@5 is keg-only, which means it was not symlinked into /usr/local,
-#because this is an alternate version of another formula.
-#
-#If you need to have qt@5 first in your PATH, run:
-#  echo 'export PATH="/usr/local/opt/qt@5/bin:$PATH"' >> ~/.zshrc
-#
-#For compilers to find qt@5 you may need to set:
-#  export LDFLAGS="-L/usr/local/opt/qt@5/lib"
-#  export CPPFLAGS="-I/usr/local/opt/qt@5/include"
