@@ -11,7 +11,8 @@
 
 std::shared_ptr<QApplication> g_app = nullptr;
 
-std::shared_ptr<MainWindow> g_mainWindowPtr(nullptr, [](MainWindow* ptr) {});
+// std::shared_ptr<MainWindow> g_mainWindowPtr(nullptr, [](MainWindow* ptr) {});
+MainWindow g_mainWindow;
 
 int main(int argc, char *argv[]) {
   // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
 
   // initHTTPSvr();
 
-  MainWindow mainWind;
+  // MainWindow mainWind;
   try {
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -44,14 +45,14 @@ int main(int argc, char *argv[]) {
         break;
       }
     }
-    mainWind.setWindowIcon(QIcon(":/res/default/logo.ico"));
-    mainWind.show();
+    g_mainWindow.setWindowIcon(QIcon(":/res/default/logo.ico"));
+    g_mainWindow.show();
   } catch (std::exception &e) {
     PrintError("错误: {}", e.what());
     QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
     exit(-1);
   }
   int code = g_app->exec();
-  g_mainWindowPtr = nullptr;
+  //g_mainWindowPtr = nullptr;
   return code;
 }

@@ -177,23 +177,23 @@ void MainWindow::knobChatsInit(QWidget *parent) {
   func(m_ctrlKnobChart->currentVelocity, QwtPlot::yRight, "当前速度(右)", QColor{155, 89, 182});
   func(m_ctrlKnobChart->targetVelocity, QwtPlot::yRight, "目标速度(右)", QColor{255, 127, 39});
   // 直接使用g_mainWindow会是NULL,什么烂毛病
-  MainWindow *lMainWind = g_mainWindowPtr.get();
+  // MainWindow *lMainWind = g_mainWindowPtr.get();
   g_knobChatsThread = std::thread{
-      [this, lMainWind]() {
+      [this]() {
         std::unique_lock<std::mutex> lock(g_KnobCtrlChart->sleepMtx);
         while (true) {
           if (!g_KnobCtrlChart->chatsUpdStatus) {
             g_KnobCtrlChart->sleepCv.wait(lock, [] { return g_KnobCtrlChart->chatsUpdStatus; });
           }
           try {
-            if (!lMainWind->checkCtrlConnect()) {
+            if (!g_mainWindow.checkCtrlConnect()) {
               g_KnobCtrlChart->chatsUpdStatus = false;
               // 未连接设备
               continue;
             }
             g_KnobCtrlChart->x++;
             Lib::HWDeviceTools tools;
-            auto status = tools.GetKnobStatus(lMainWind->getCtrlConnectDev());
+            auto status = tools.GetKnobStatus(g_mainWindow.getCtrlConnectDev());
             sChart currentAngle;
             // 目标角度
             g_KnobCtrlChart->currentAngle.points.push_back(

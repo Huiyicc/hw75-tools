@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   try {
-    g_mainWindowPtr.reset(this);
+    // g_mainWindowPtr.reset(this);
     ui->setupUi(this);
     // 设置无边框
     this->setWindowFlag(Qt::FramelessWindowHint);

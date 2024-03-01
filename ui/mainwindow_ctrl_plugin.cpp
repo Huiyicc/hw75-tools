@@ -53,7 +53,6 @@ QString ctrl_plugin_status = "";
 // 当前配置区的ui
 std::map<QString, PluginUI> ctrl_plugin_ui;
 bool stopBack = false;
-MainWindow *lMainWind = g_mainWindowPtr.get();
 
 std::shared_ptr<std::thread> m_pluginCallBack = std::make_shared<std::thread>([]() {
   auto initDevPathFunc = []() -> std::string {
@@ -84,10 +83,10 @@ std::shared_ptr<std::thread> m_pluginCallBack = std::make_shared<std::thread>([]
   std::string devPath;
   while (!stopBack) {
     DEFER(QThread::msleep(1000));
-    if (lMainWind == nullptr) {
-      PrintDebug("插件监听线程: 主窗口未初始化");
-      continue;
-    }
+//    if (lMainWind == nullptr) {
+//      PrintDebug("插件监听线程: 主窗口未初始化");
+//      continue;
+//    }
     if (devPath.empty()) {
       devPath = initDevPathFunc();
       if (devPath.empty()) {
@@ -219,7 +218,7 @@ void MainWindow::ctrlPluginInit(QWidget *parent) {
   m_pluginTick = std::make_shared<QTimer>(this);
   connect(m_pluginTick.get(), &QTimer::timeout, this, &MainWindow::ctrlPluginTickEvent);
   m_pluginTick->start(10000);
-  lMainWind = this;
+  // lMainWind = this;
 }
 
 void MainWindow::ctrlPluginUnInit() {
