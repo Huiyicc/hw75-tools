@@ -21,7 +21,7 @@ namespace utils::log {
 #define LOCALTIME(time_str) \
   auto now = time(nullptr);     \
   struct tm tm_info = {0};      \
-  localtime_r(&tm_info, &now);  \
+  localtime_r(&now,&tm_info);  \
   strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &tm_info);
 
 #endif

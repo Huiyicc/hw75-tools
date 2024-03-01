@@ -9,7 +9,7 @@
 #include <QSystemSemaphore>
 #include <QTranslator>
 
-std::shared_ptr<QApplication> g_app = nullptr;
+QApplication* g_app = nullptr;
 
 // std::shared_ptr<MainWindow> g_mainWindowPtr(nullptr, [](MainWindow* ptr) {});
 
@@ -17,7 +17,7 @@ MainWindow *g_mainWindow = nullptr;
 int main(int argc, char *argv[]) {
   // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-  g_app = std::make_shared<QApplication>(argc, argv);
+  g_app = new QApplication(argc, argv);
 
   // 防止多开
   QString key = "__HWTOOLS_LOCK_";
@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
   int code = g_app->exec();
-  //g_mainWindowPtr = nullptr;
+  g_app->exit(0);
+  delete g_app;
   return code;
 }
