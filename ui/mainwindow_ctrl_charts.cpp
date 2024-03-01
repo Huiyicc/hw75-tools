@@ -186,14 +186,14 @@ void MainWindow::knobChatsInit(QWidget *parent) {
             g_KnobCtrlChart->sleepCv.wait(lock, [] { return g_KnobCtrlChart->chatsUpdStatus; });
           }
           try {
-            if (!g_mainWindow.checkCtrlConnect()) {
+            if (!g_mainWindow->checkCtrlConnect()) {
               g_KnobCtrlChart->chatsUpdStatus = false;
               // 未连接设备
               continue;
             }
             g_KnobCtrlChart->x++;
             Lib::HWDeviceTools tools;
-            auto status = tools.GetKnobStatus(g_mainWindow.getCtrlConnectDev());
+            auto status = tools.GetKnobStatus(g_mainWindow->getCtrlConnectDev());
             sChart currentAngle;
             // 目标角度
             g_KnobCtrlChart->currentAngle.points.push_back(
