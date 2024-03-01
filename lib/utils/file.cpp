@@ -2,6 +2,7 @@
 // Created by HuiYi on 2023/6/3.
 //
 #include "file.hpp"
+#include "defer.hpp"
 #include <QDir>
 #include <QFile>
 
@@ -23,19 +24,19 @@ bool FileIfSet(const std::string &filePath, bool create, const std::string &cont
   }
 }
 
-QString ReadFile(const QString &fileName) {
+QByteArray ReadFile(const QString &fileName) {
   QFile file(fileName);
   if (!file.exists()) {
+    return {};
     // 文件不存在，创建
-    QDir().mkpath(QFileInfo(file).path());// 创建目录，如果不存在的话
+    // QDir().mkpath(QFileInfo(file).path());// 创建目录，如果不存在的话
   }
-  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    return QString();
+  if (!file.open(QIODevice::ReadOnly)) {
+    return {};
   }
-  QTextStream in(&file);
-  QString contents = in.readAll();
-  file.close();
-  return contents;
+  DEFER(file.close());
+  auto binaryData = file.readAll();
+  return binaryData;
 }
 
 bool WriteFile(const QString &fileName, const QString &content) {

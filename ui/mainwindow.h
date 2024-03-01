@@ -210,6 +210,7 @@ private:
   std::shared_ptr<QTimer> m_pluginTick;
 };
 
-extern std::shared_ptr<MainWindow> g_mainWindowPtr;
+//extern std::shared_ptr<MainWindow> g_mainWindowPtr;
+extern MainWindow* g_mainWindow;
 
 #endif// MAINWINDOW_H

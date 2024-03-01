@@ -31,10 +31,12 @@ brew install cmake gcc gdb
 
 ```shell
 
-brew install qt6
+brew install qt@6
 brew install qt-creator
 brew install hidapi
 brew install protobuf
+brew install qwt
+brew install openssl
 
 ```
 > 当你安装完成这些库之后直接编译可能会出现找不到库的情况,这时候需要手动配置一下库的路径

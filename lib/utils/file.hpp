@@ -28,7 +28,7 @@ namespace utils::files {
 
 	/** ReadFile 读入文件数据
  * @param filePath：文件路径 */
-	QString ReadFile(const QString &fileName);
+  QByteArray ReadFile(const QString &fileName);
 
 /**
  * @brief 从文件路径中提取文件名

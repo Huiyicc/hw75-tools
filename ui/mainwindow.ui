@@ -19,7 +19,8 @@
    <string>HWTools</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background:rgb(2, 13, 71)</string>
+   <string notr="true">background:rgb(2, 13, 71);
+color: rgb(211, 216, 237);</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="groupBox">
@@ -316,7 +317,7 @@ QTabBar::tab:selected {
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="ctrl_tab_home">
        <attribute name="title">
@@ -1074,9 +1075,9 @@ background:rgb(29, 37, 86);</string>
 
 # 固件开源地址
 
-[Github](https://github.com/Huiyicc/HelloWord_HY)
+[Huiyicc/HelloWord_HY (Github)](https://github.com/Huiyicc/HelloWord_HY)
 
-[Gitee](https://gitee.com/LoveA/HelloWord_HY)
+[LoveA/HelloWord_HY (Gitee)](https://gitee.com/LoveA/HelloWord_HY)
 
 &lt;br/&gt;
 
@@ -1110,6 +1111,9 @@ background:rgb(29, 37, 86);</string>
        </widget>
       </widget>
       <widget class="QWidget" name="ctrl_tab_knob">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <attribute name="title">
         <string>电机</string>
        </attribute>
@@ -1227,6 +1231,9 @@ QPushButton:focus {
         </property>
        </widget>
        <widget class="QGroupBox" name="groupBox_9">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>10</x>

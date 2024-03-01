@@ -1,3 +1,4 @@
+#include "build_info.h"
 #include "http/httpsvr.hpp"
 #include "plugin/Plugin.hpp"
 #include "ui/mainwindow.h"
@@ -7,16 +8,16 @@
 #include <QMessageBox>
 #include <QSystemSemaphore>
 #include <QTranslator>
-#include "build_info.h"
 
-std::shared_ptr<QApplication> g_app = nullptr;
+QApplication* g_app = nullptr;
 
-std::shared_ptr<MainWindow> g_mainWindowPtr(nullptr, [](MainWindow* ptr) {});
+// std::shared_ptr<MainWindow> g_mainWindowPtr(nullptr, [](MainWindow* ptr) {});
 
+MainWindow *g_mainWindow = nullptr;
 int main(int argc, char *argv[]) {
   // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-  g_app = std::make_shared<QApplication>(argc, argv);
+  g_app = new QApplication(argc, argv);
 
   // 防止多开
   QString key = "__HWTOOLS_LOCK_";
@@ -25,15 +26,16 @@ int main(int argc, char *argv[]) {
     QMessageBox::critical(nullptr, "错误", "检查程序锁失败，可能已经有一个实例在运行了");
     exit(-1);
   }
-//  QSharedMemory sharedMemory(key);
-//  if (!sharedMemory.create(1)) {
-//    QMessageBox::critical(nullptr, "错误", "检查程序锁失败，可能已经有一个实例在运行了");
-//    exit(-1);
-//  }
+  //  QSharedMemory sharedMemory(key);
+  //  if (!sharedMemory.create(1)) {
+  //    QMessageBox::critical(nullptr, "错误", "检查程序锁失败，可能已经有一个实例在运行了");
+  //    exit(-1);
+  //  }
 
   // initHTTPSvr();
 
   MainWindow mainWind;
+  g_mainWindow = &mainWind;
   try {
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -44,14 +46,16 @@ int main(int argc, char *argv[]) {
         break;
       }
     }
-    mainWind.setWindowIcon(QIcon(":/res/default/logo.ico"));
-    mainWind.show();
+    g_mainWindow->setWindowIcon(QIcon(":/res/default/logo.ico"));
+    g_mainWindow->show();
   } catch (std::exception &e) {
     PrintError("错误: {}", e.what());
-    QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));;
+    QMessageBox::critical(nullptr, "错误", QString::fromStdString(e.what()));
+    ;
     exit(-1);
   }
   int code = g_app->exec();
-  g_mainWindowPtr = nullptr;
+  g_app->exit(0);
+  delete g_app;
   return code;
 }
