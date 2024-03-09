@@ -5,6 +5,7 @@
 #ifndef HW_TOOLS_LOG_HPP
 #define HW_TOOLS_LOG_HPP
 #include "fmt/format.h"
+#include <iostream>
 #include <ctime>
 
 namespace utils::log {

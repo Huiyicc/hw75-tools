@@ -100,6 +100,8 @@ public:
   // 电机模式切换事件
   void knobEventModeSwitchClicked(bool);
 
+  void knobSetKeyEvent(bool checked);
+
   // ---扩展-电机采样---
   void knobChatsInit(QWidget *parent);
 

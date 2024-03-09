@@ -63,9 +63,14 @@ set(PROJECT_SOURCES_APP
         res.qrc
         ui/widget/KnobDashboard.cpp
         ui/widget/KnobDashboard.hpp
+        # 电机校准窗口
         ui/knobaligndialog.h
         ui/knobaligndialog.cpp
         ui/knobaligndialog.ui
+        # 按键选择器
+        ui/keyselection.h
+        ui/keyselection.cpp
+        ui/keyselection.ui
         main.cpp
 )
 

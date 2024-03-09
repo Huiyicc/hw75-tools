@@ -3,43 +3,45 @@
 //
 #include "./ui_mainwindow.h"
 #include "knobaligndialog.h"
+#include "keyselection.h"
 #include "mainwindow.h"
 #include "ui/widget/MsgBox.hpp"
 #include "utils/Log.hpp"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QThread>
+#include <memory>
 
 // 扩展appid
 enum KnobAppID {
-    APPID_VOLUME = 2,
-    APPID_UPDOWN = 3,
-    APPID_LIGHT = 4,
-    APPID_WINDOW = 5,
-    APPID_LEFTRIGHT = 6,
-    APPID_HID = 7,
+  APPID_VOLUME = 2,
+  APPID_UPDOWN = 3,
+  APPID_LIGHT = 4,
+  APPID_WINDOW = 5,
+  APPID_LEFTRIGHT = 6,
+  APPID_HID = 7,
 };
 
 // 电机模式
 enum KnobMode {
-    // 关闭模式
-    MODE_DISABLE = 0,
-    // 惯性模式
-    MODE_INERTIA,
-    // 编码器模式
-    MODE_ENCODER,
-    // 荆轮编码器模式
-    MODE_JINLUNENCODER,
-    // 弹簧模式
-    MODE_SPRING,
-    // 阻尼模式
-    MODE_DAMPED,
-    // 拨杆模式
-    MODE_PADDLE,
-    // 旋转模式
-    MODE_SPIN,
-    // 智能模式
-    MODE_INTELLIGENT,
+  // 关闭模式
+  MODE_DISABLE = 0,
+  // 惯性模式
+  MODE_INERTIA,
+  // 编码器模式
+  MODE_ENCODER,
+  // 荆轮编码器模式
+  MODE_JINLUNENCODER,
+  // 弹簧模式
+  MODE_SPRING,
+  // 阻尼模式
+  MODE_DAMPED,
+  // 拨杆模式
+  MODE_PADDLE,
+  // 旋转模式
+  MODE_SPIN,
+  // 智能模式
+  MODE_INTELLIGENT,
 };
 
 
@@ -74,6 +76,7 @@ void MainWindow::knobInit(QWidget *parent) {
   connect(ui->ctrl_knob_mode_switch_3, &QRadioButton::clicked, this, &MainWindow::knobEventModeSwitchClicked);
   connect(ui->ctrl_knob_mode_switch_4, &QRadioButton::clicked, this, &MainWindow::knobEventModeSwitchClicked);
 
+  connect(ui->ctrl_knob_button_setup, &QPushButton::clicked, this, &MainWindow::knobSetKeyEvent);
 
   knobEventTabChanged(0);
 }
@@ -97,12 +100,13 @@ void MainWindow::knobEventTabChanged(int index) {
   //bool isCharts = (ui->ctrl_tabWidget_knob->tabText(index) == "采样");
   ui->groupBox_9->setEnabled(true);
   ui->groupBox_9->setVisible(true);
+
   //ui->groupBox_charts->setVisible(true);
-//  if (isCharts) {
-//    // 采样窗口
-//    knobChatsEventShowTable();
-//    return;
-//  }
+  //  if (isCharts) {
+  //    // 采样窗口
+  //    knobChatsEventShowTable();
+  //    return;
+  //  }
   if (g_appIDTable.find(index) == g_appIDTable.end()) {
     PrintInfo("未知的应用");
     return;
@@ -118,9 +122,9 @@ void MainWindow::knobEventTabChanged(int index) {
 void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf, bool swf) {
   std::map<int, QRadioButton *> bMap = {
       {KnobMode::MODE_INTELLIGENT, ui->ctrl_knob_mode_switch_1},
-      {KnobMode::MODE_ENCODER,     ui->ctrl_knob_mode_switch_2},
-      {KnobMode::MODE_INERTIA,     ui->ctrl_knob_mode_switch_3},
-      {KnobMode::MODE_DAMPED,      ui->ctrl_knob_mode_switch_4},
+      {KnobMode::MODE_ENCODER, ui->ctrl_knob_mode_switch_2},
+      {KnobMode::MODE_INERTIA, ui->ctrl_knob_mode_switch_3},
+      {KnobMode::MODE_DAMPED, ui->ctrl_knob_mode_switch_4},
   };
   // 让所有按钮都不选中
   for (auto &i: bMap) {
@@ -132,8 +136,7 @@ void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf, bool swf) {
   }
   if (swf) {
     // 有编码器步数的模式
-    if (conf.Mode == KnobMode::MODE_ENCODER
-        || conf.Mode == KnobMode::MODE_INTELLIGENT) {
+    if (conf.Mode == KnobMode::MODE_ENCODER || conf.Mode == KnobMode::MODE_INTELLIGENT) {
       ui->ctrl_knob_groupBox_step->setHidden(false);
     } else {
       ui->ctrl_knob_groupBox_step->setHidden(true);
@@ -157,8 +160,7 @@ void MainWindow::knobUpdataModeSwitchUI(Lib::KnobAppConf &conf, bool swf) {
   ui->ctrl_knob_horizontalSlider_triggerstep->setValue(conf.AddedValue);
   ui->ctrl_knob_label_triggerstep->setText(QString::number(conf.AddedValue));
   // 有编码器步数的模式
-  if (conf.Mode == KnobMode::MODE_ENCODER
-      || conf.Mode == KnobMode::MODE_INTELLIGENT) {
+  if (conf.Mode == KnobMode::MODE_ENCODER || conf.Mode == KnobMode::MODE_INTELLIGENT) {
     ui->ctrl_knob_groupBox_step->setHidden(false);
     ui->ctrl_knob_horizontalSlider_step->setMaximum(int(conf.stepConf.max));
     ui->ctrl_knob_horizontalSlider_step->setMinimum(int(conf.stepConf.min));
@@ -212,9 +214,10 @@ void MainWindow::knobEventSliderMoveFeedback(int value) {
                                 eventType, conf);
     }
   } catch (std::exception &e) {
-    PrintError("错误: {}",e.what());
-    PrintDebug("附加信息: {}",conf.toJson().dump());
-    MsgBox::critical(this, "错误", QString::fromStdString(e.what()));;
+    PrintError("错误: {}", e.what());
+    PrintDebug("附加信息: {}", conf.toJson().dump());
+    MsgBox::critical(this, "错误", QString::fromStdString(e.what()));
+    ;
   }
 }
 
@@ -242,8 +245,17 @@ void MainWindow::knobEventModeSwitchClicked(bool checked) {
                               hid::msg::SetAppType::KnobMode, conf);
     QThread::msleep(5);
   } catch (std::exception &e) {
-    PrintError("错误: {}",e.what());
-    MsgBox::critical(this, "错误", QString::fromStdString(e.what()));;
+    PrintError("错误: {}", e.what());
+    MsgBox::critical(this, "错误", QString::fromStdString(e.what()));
+    ;
+  }
+}
+
+void MainWindow::knobSetKeyEvent(bool checked) {
+  auto eventButton = qobject_cast<QPushButton *>(QObject::sender());
+  if (eventButton == ui->ctrl_knob_button_setup) {
+    auto d = std::make_shared<KeySelection>(this) ;
+    d->exec();
   }
 
-}
+};
