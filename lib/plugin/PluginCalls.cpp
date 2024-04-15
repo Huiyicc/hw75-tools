@@ -7,12 +7,12 @@
 #include <iostream>
 #include <map>
 
-extern MainWindow* g_mainWindow;
+
 
 namespace Lib::Plugin {
 
-void CallPluginLogInfo(const char *name,const char *raw) {
-  PrintInfo("[{}]PluginLogInfo: {}",name,raw);
+void CallPluginLogInfo(const char *name, const char *raw) {
+  PrintInfo("[{}]PluginLogInfo: {}", name, raw);
 }
 
 void CallEinkFullUpdateImage(const char *data, int size) {
@@ -21,9 +21,9 @@ void CallEinkFullUpdateImage(const char *data, int size) {
 
 
 std::map<std::string, void *> g_mapPluginFunc = {
-		{"PluginLogInfo",                (void *) CallPluginLogInfo},
-		{"EinkFullUpdateImage", (void *) CallEinkFullUpdateImage},
+    {"PluginLogInfo", (void *) CallPluginLogInfo},
+    {"EinkFullUpdateImage", (void *) CallEinkFullUpdateImage},
 };
 
 
-} // Lib
+}// namespace Lib::Plugin

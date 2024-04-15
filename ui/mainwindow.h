@@ -56,7 +56,7 @@ public:
   std::shared_ptr<Lib::Image> m_userPushImage = std::make_shared<Lib::Image>();
 
   // ---扩展-获取当前连接设备---
-  Lib::HWDevice getCtrlConnectDev();
+  Lib::HWDevice& getCtrlConnectDev();
   // ---扩展-检查当前是否连接设备---
   bool checkCtrlConnect();
 

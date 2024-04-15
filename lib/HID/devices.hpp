@@ -8,6 +8,7 @@
 #include "image/Image.hpp"
 #include "nlohmann/json.hpp"
 #include "protobuf/hid_msg.pb.h"
+#include "utils/Log.hpp"
 #include <QMetaType>
 #include <algorithm>
 #include <codecvt>
@@ -60,15 +61,25 @@ struct HWDevice {
   QString SerialNumber;
 
   nlohmann::json toJson() {
-    return {
-        {"path", Path.toStdString()},
-        {"vendor_id", VendorId},
-        {"product_id", ProductId},
-        {"product_name", ProductName.toStdString()},
-        {"interface_number", InterfaceNumber},
-        {"usage", Usage},
-        {"usage_page", UsagePage},
-        {"serial_number", SerialNumber.toStdString()}};
+    nlohmann::json r = nlohmann::json::object();
+    r["path"] = Path.toStdString();
+    r["vendor_id"] = VendorId;
+    r["product_id"] = ProductId;
+    r["product_name"] = ProductName.toStdString();
+    r["interface_number"] = InterfaceNumber;
+    r["usage"] = Usage;
+    r["usage_page"] = UsagePage;
+    r["serial_number"] = SerialNumber.toStdString();
+    return r;
+//    return {
+//        {"path", Path.toStdString()},
+//        {"vendor_id", VendorId},
+//        {"product_id", ProductId},
+//        {"product_name", ProductName.toStdString()},
+//        {"interface_number", InterfaceNumber},
+//        {"usage", Usage},
+//        {"usage_page", UsagePage},
+//        {"serial_number", SerialNumber.toStdString()}};
   }
 };
 
@@ -185,7 +196,9 @@ private:
   static std::string w2a(const wchar_t *str) {
     // 将wchar_t*转换为std::string
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    return converter.to_bytes(str);
+    auto err = converter.to_bytes(str);
+    PrintError("DeviceException: {}",err);
+    return err;
   };
 };
 
@@ -198,8 +211,10 @@ public:
 
   ~HWDeviceTools();
 
+  bool OpenDevice(const QString &path,std::function<bool(hid_device_*dev)>openCallback= nullptr,bool async = false);
+
   /** 获取瀚文设备列表(暂时只能获取扩展组件) */
-  static size_t GetHWDevicesList(std::vector<HWDevice> &HWDevicesList);
+  static size_t GetHWDynamicDevicesList(std::vector<HWDevice> &HWDevicesList);
 
   /** 获取扩展模块的版本号信息 */
   HWDeviceDynamicVersion GetDynamicVersion(HWDevice &devices);
@@ -210,23 +225,19 @@ public:
      * */
   void SetDynamicEinkScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar);
 
-  void SetDynamicEinkScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar);
-
   //---
   // 获取扩展App配置
   KnobAppConf GetDynamicAppinConf(HWDevice &devices, int appId);
 
-  KnobAppConf GetDynamicAppinConf(const QString &devicesPath, int appId);
 
   //---
   // 设置扩展App配置
   void SetDynamicAppinConf(HWDevice &devices, int appId, hid::msg::SetAppType setAppType, KnobAppConf &conf);
 
-  void SetDynamicAppinConf(const QString &devicesPath, int appId, hid::msg::SetAppType setAppType, KnobAppConf &conf);
   //---
   // 获取扩展RGB配置
-  HWDeviceDynamicRGBStatus GetRgbConfig(const HWDevice &devices, int id);
-  void SetDynamicRgbConfig(const HWDevice &devices, int id, const HWDeviceDynamicRGBStatus &conf);
+  HWDeviceDynamicRGBStatus GetRgbConfig( HWDevice &devices, int id);
+  void SetDynamicRgbConfig( HWDevice &devices, int id, const HWDeviceDynamicRGBStatus &conf);
 
   //---
   // 获取扩展系统配置
@@ -239,23 +250,23 @@ public:
      * */
   void SetDynamicOLEDScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar);
 
-  void SetDynamicOLEDScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar);
 
   //---
   // 设置扩展屏幕
-  void SetDynamicScerrn(int id, const QString &devicesPath, std::vector<unsigned char> &imageArrar);
+  void SetDynamicScerrn(int id, HWDevice &devices, std::vector<unsigned char> &imageArrar);
   //---
-  HWDeviceDynamicKnobStatus GetKnobStatus(const HWDevice &devices);
+  HWDeviceDynamicKnobStatus GetKnobStatus( HWDevice &devices);
 
   constexpr static int HWVID = 0xdc00;
   constexpr static int HWPID = 0x5750;
   constexpr static int USB_USAGE_PAGE = 0x8c;
+  constexpr static int USB_USAGE_DEFAULT = 0x04;
   constexpr static int USB_USAGE_PLUGIN = 0x06;
   constexpr static int HID_REPORT_COUNT = 64;
   constexpr static int HID_PAYLOAD_SIZE = HID_REPORT_COUNT - 3;
 
   // 发送消息,外部调用禁止上锁
-  int sendMessage(hid_device_ *dev, hid::msg::PcMessage &message, bool lock = true);
+  int sendMessage(HWDevice &hwdevices,hid_device_ *dev, hid::msg::PcMessage &message, bool lock = true);
 
   static int readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize);
 

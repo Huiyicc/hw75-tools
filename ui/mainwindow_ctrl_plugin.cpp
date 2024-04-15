@@ -54,90 +54,7 @@ QString ctrl_plugin_status = "";
 std::map<QString, PluginUI> ctrl_plugin_ui;
 bool stopBack = false;
 
-std::shared_ptr<std::thread> m_pluginCallBack = std::make_shared<std::thread>([]() {
-  auto initDevPathFunc = []() -> std::string {
-    std::string rePath;
-
-    // 获取连接的HID设备列表
-    auto devs = hid_enumerate(Lib::HWDeviceTools::HWVID, Lib::HWDeviceTools::HWPID);
-    auto cur_dev = devs;
-
-    // 开始遍历设备列表
-    while (cur_dev) {
-      // 判断设备是否为USB HID设备
-
-      if (cur_dev->product_id == Lib::HWDeviceTools::HWPID && cur_dev->vendor_id == Lib::HWDeviceTools::HWVID// 判断是否为瀚文设备
-          && cur_dev->usage_page == Lib::HWDeviceTools::USB_USAGE_PAGE && cur_dev->usage == Lib::HWDeviceTools::USB_USAGE_PLUGIN) {
-        // 打开设备
-        auto handle = hid_open_path(cur_dev->path);
-        rePath = cur_dev->path;
-        hid_close(handle);
-      }
-      // 指向下一个设备
-      cur_dev = cur_dev->next;
-    }
-    // 释放设备列表
-    hid_free_enumeration(devs);
-    return rePath;
-  };
-  std::string devPath;
-  while (!stopBack) {
-    DEFER(QThread::msleep(1000));
-//    if (lMainWind == nullptr) {
-//      PrintDebug("插件监听线程: 主窗口未初始化");
-//      continue;
-//    }
-    if (devPath.empty()) {
-      devPath = initDevPathFunc();
-      if (devPath.empty()) {
-        QThread::msleep(5000);
-        continue;
-      }
-    }
-    try {
-      auto devHandle = hid_open_path(devPath.c_str());
-      DEFER(hid_close(devHandle));
-      if (devHandle == nullptr) {
-        devPath = "";
-        auto errMsg = QString::fromStdWString(hid_error(NULL));
-        throw std::runtime_error(errMsg.toStdString());
-      }
-      std::vector<unsigned char> buf(66, 0);
-      auto r = hid_read(devHandle, buf.data(), 66);
-      if (r <= 0) {
-        auto errMsg = QString::fromStdWString(hid_error(devHandle));
-        throw std::runtime_error(errMsg.toStdString());
-      }
-      PrintDebug("插件监听线程: 读取到数据");
-      auto dataPtr = buf.data();
-      //第一个字节为报告id,第二个字节为完整性,第三个字节为数据长度
-      if (dataPtr[0] != 0x6) {
-        throw std::runtime_error("报告ID错误");
-      }
-      if (dataPtr[1] != 0x0) {
-        throw std::runtime_error("数据完整性错误");
-      }
-      int lents = dataPtr[2];
-      if (lents > Lib::HWDeviceTools::HID_REPORT_COUNT) {
-        throw std::runtime_error("data lens is to long.");
-      }
-      // 根据长度写入流
-      google::protobuf::io::ArrayInputStream arrayInput((void *) (&dataPtr[2]), lents);
-      // 解码字节流
-      hid::msg::CtrlPluginMessage message;
-      Lib::HWDeviceTools::readDelimitedD2P(&arrayInput, &message);
-      if (message.has_button_status()) {
-        // 按钮消息
-        auto buttonStatus = message.button_status();
-        Lib::Plugin::CallPluginButtonPin("ctrl", Lib::Plugin::ButtonPinCallType(buttonStatus.status()));
-      }
-
-
-    } catch (std::exception &e) {
-      PrintError("插件监听线程异常: {}", e.what());
-    }
-  }
-});
+extern std::shared_ptr<std::thread> m_pluginCallBack;
 
 void MainWindow::ctrlPluginInit(QWidget *parent) {
   connect(ui->ctrl_plugin_button_saveconfig, &QPushButton::clicked, this, &MainWindow::ctrlPluginSaveConfig);
@@ -219,6 +136,91 @@ void MainWindow::ctrlPluginInit(QWidget *parent) {
   connect(m_pluginTick.get(), &QTimer::timeout, this, &MainWindow::ctrlPluginTickEvent);
   m_pluginTick->start(10000);
   // lMainWind = this;
+
+  m_pluginCallBack = std::make_shared<std::thread>([]() {
+    auto initDevPathFunc = []() -> std::string {
+      std::string rePath;
+
+      // 获取连接的HID设备列表
+      auto devs = hid_enumerate(Lib::HWDeviceTools::HWVID, Lib::HWDeviceTools::HWPID);
+      auto cur_dev = devs;
+
+      // 开始遍历设备列表
+      while (cur_dev) {
+        // 判断设备是否为USB HID设备
+
+        if (cur_dev->product_id == Lib::HWDeviceTools::HWPID && cur_dev->vendor_id == Lib::HWDeviceTools::HWVID// 判断是否为瀚文设备
+            && cur_dev->usage_page == Lib::HWDeviceTools::USB_USAGE_PAGE && cur_dev->usage == Lib::HWDeviceTools::USB_USAGE_PLUGIN) {
+          // 打开设备
+          auto handle = hid_open_path(cur_dev->path);
+          rePath = cur_dev->path;
+          hid_close(handle);
+        }
+        // 指向下一个设备
+        cur_dev = cur_dev->next;
+      }
+      // 释放设备列表
+      hid_free_enumeration(devs);
+      return rePath;
+    };
+    std::string devPath;
+    while (!stopBack) {
+      DEFER(QThread::msleep(1000));
+      //    if (lMainWind == nullptr) {
+      //      PrintDebug("插件监听线程: 主窗口未初始化");
+      //      continue;
+      //    }
+      if (devPath.empty()) {
+        devPath = initDevPathFunc();
+        if (devPath.empty()) {
+          QThread::msleep(5000);
+          continue;
+        }
+      }
+      try {
+        auto devHandle = hid_open_path(devPath.c_str());
+        DEFER(hid_close(devHandle));
+        if (devHandle == nullptr) {
+          devPath = "";
+          auto errMsg = QString::fromStdWString(hid_error(NULL));
+          throw std::runtime_error(errMsg.toStdString());
+        }
+        std::vector<unsigned char> buf(66, 0);
+        auto r = hid_read(devHandle, buf.data(), 66);
+        if (r <= 0) {
+          auto errMsg = QString::fromStdWString(hid_error(devHandle));
+          throw std::runtime_error(errMsg.toStdString());
+        }
+        PrintDebug("插件监听线程: 读取到数据");
+        auto dataPtr = buf.data();
+        //第一个字节为报告id,第二个字节为完整性,第三个字节为数据长度
+        if (dataPtr[0] != 0x6) {
+          throw std::runtime_error("报告ID错误");
+        }
+        if (dataPtr[1] != 0x0) {
+          throw std::runtime_error("数据完整性错误");
+        }
+        int lents = dataPtr[2];
+        if (lents > Lib::HWDeviceTools::HID_REPORT_COUNT) {
+          throw std::runtime_error("data lens is to long.");
+        }
+        // 根据长度写入流
+        google::protobuf::io::ArrayInputStream arrayInput((void *) (&dataPtr[2]), lents);
+        // 解码字节流
+        hid::msg::CtrlPluginMessage message;
+        Lib::HWDeviceTools::readDelimitedD2P(&arrayInput, &message);
+        if (message.has_button_status()) {
+          // 按钮消息
+          auto buttonStatus = message.button_status();
+          Lib::Plugin::CallPluginButtonPin("ctrl", Lib::Plugin::ButtonPinCallType(buttonStatus.status()));
+        }
+
+
+      } catch (std::exception &e) {
+        PrintError("插件监听线程异常: {}", e.what());
+      }
+    }
+  });
 }
 
 void MainWindow::ctrlPluginUnInit() {

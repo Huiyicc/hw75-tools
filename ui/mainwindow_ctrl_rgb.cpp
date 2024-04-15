@@ -11,7 +11,7 @@
 
 bool rgbInit = false;
 
-auto getRgbStatusFunc = [](const Lib::HWDevice &dev, int index,
+auto getRgbStatusFunc = [](Lib::HWDevice &dev, int index,
                            QRadioButton *sw1, QRadioButton *sw2, QGroupBox *sw2Group, QRadioButton *sw3,
                            QSlider *horizontal, QLabel *hValue,
                            QSlider *r, QLabel *rValue,
@@ -144,7 +144,8 @@ void MainWindow::ctrlRGBTabChanged() {
   }
   rgbInit = false;
   // 氛围灯
-  getRgbStatusFunc(getCtrlConnectDev(), 0,
+  auto dev = getCtrlConnectDev();
+  getRgbStatusFunc(dev, 0,
                    ui->ctrl_RGB_mood_mode_switch_1, ui->ctrl_RGB_mood_mode_switch_2, ui->ctrl_RGB_mood_groupBox, ui->ctrl_RGB_mood_mode_switch_3,
                    ui->ctrl_RGB_mood_horizontalSlider_color_l, ui->ctrl_RGB_mood_label_color_l_value,
                    ui->ctrl_RGB_mood_horizontalSlider_color_r, ui->ctrl_RGB_mood_label_color_r_value,
@@ -164,7 +165,7 @@ void MainWindow::ctrlRGBTabChanged() {
   } else {
     return;
   }
-  getRgbStatusFunc(getCtrlConnectDev(), index,
+  getRgbStatusFunc(dev, index,
                    ui->ctrl_RGB_indicate_mode_switch_1, ui->ctrl_RGB_indicate_mode_switch_2, ui->ctrl_RGB_indicate_groupBox, ui->ctrl_RGB_indicate_mode_switch_3,
                    ui->ctrl_RGB_indicate_horizontalSlider_color_l, ui->ctrl_RGB_indicate_label_color_l_value,
                    ui->ctrl_RGB_indicate_horizontalSlider_color_r, ui->ctrl_RGB_indicate_label_color_r_value,
@@ -215,7 +216,8 @@ void MainWindow::ctrlRGBEventMoodModeSwitchClicked(bool checked) {
   PrintInfo("SetDynamicRgbConfig send: {}", cfg.toJson().dump(2));
   //fmt::print("SetDynamicRgbConfig send: {}\n", cfg.toJson().dump(2));
   Lib::HWDeviceTools tools;
-  tools.SetDynamicRgbConfig(getCtrlConnectDev(), id, cfg);
+auto dev = getCtrlConnectDev();
+  tools.SetDynamicRgbConfig(dev, id, cfg);
 }
 
 void MainWindow::ctrlRGBEventSleepLSettingChanged(bool state) {
@@ -236,7 +238,8 @@ void MainWindow::ctrlRGBEventSleepLSettingChanged(bool state) {
   cfg.sleep_brightness = ui->ctrl_RGB_indicate_sleep_horizontalSlider_light_l->value() / 100.0f;
   PrintInfo("SetDynamicRgbConfig send id:{}cfg: {}", index, cfg.toJson().dump(2));
   Lib::HWDeviceTools tools;
-  tools.SetDynamicRgbConfig(getCtrlConnectDev(), index, cfg);
+  auto dev = getCtrlConnectDev();
+  tools.SetDynamicRgbConfig(dev, index, cfg);
 }
 
 void MainWindow::ctrlRGBIndicatIndexCheckedChanged(bool state) {
@@ -253,7 +256,8 @@ void MainWindow::ctrlRGBIndicatIndexCheckedChanged(bool state) {
   } else {
     return;
   }
-  getRgbStatusFunc(getCtrlConnectDev(), index,
+  auto dev = getCtrlConnectDev();
+  getRgbStatusFunc(dev, index,
                    ui->ctrl_RGB_indicate_mode_switch_1, ui->ctrl_RGB_indicate_mode_switch_2,ui->ctrl_RGB_indicate_groupBox, ui->ctrl_RGB_indicate_mode_switch_3,
                    ui->ctrl_RGB_indicate_horizontalSlider_color_l, ui->ctrl_RGB_indicate_label_color_l_value,
                    ui->ctrl_RGB_indicate_horizontalSlider_color_r, ui->ctrl_RGB_indicate_label_color_r_value,
@@ -329,5 +333,6 @@ void MainWindow::ctrlEventRGBValueChanged(int value) {
   }
   PrintInfo("SetDynamicRgbConfig send id:{}cfg: {}", index, cfg.toJson().dump(2));
   Lib::HWDeviceTools tools;
-  tools.SetDynamicRgbConfig(getCtrlConnectDev(), index, cfg);
+  auto dev = getCtrlConnectDev();
+  tools.SetDynamicRgbConfig(dev, index, cfg);
 };

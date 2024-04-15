@@ -5,13 +5,14 @@
 #ifndef HW_TOOLS_LOG_HPP
 #define HW_TOOLS_LOG_HPP
 #include "fmt/format.h"
-#include <iostream>
+#include "spdlog/spdlog.h"
 #include <ctime>
+#include <iostream>
 
 namespace utils::log {
 
 #ifdef _D__WIN32__
-#define LOCALTIME(time_str)                                                 \
+#define LOCALTIME(time_str)                                                          \
   auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); \
   std::tm tm_info = {0};                                                             \
   localtime_s(&tm_info, &now);                                                       \
@@ -19,36 +20,42 @@ namespace utils::log {
 
 
 #else
-#define LOCALTIME(time_str) \
-  auto now = time(nullptr);     \
-  struct tm tm_info = {0};      \
-  localtime_r(&now,&tm_info);  \
+#define LOCALTIME(time_str)    \
+  auto now = time(nullptr);    \
+  struct tm tm_info = {0};     \
+  localtime_r(&now, &tm_info); \
   strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &tm_info);
 
 #endif
 
-#define PrintInfo(fstr, ...)                                                                                      \
-  do {                                                                                                            \
-    char time_str[32];                                                                                            \
-    LOCALTIME(time_str);                                                                                          \
-    std::string lstr = "<I> <{}> [{}:{}] ";                                                                       \
-    std::cout << fmt::format(lstr + std::string(fstr), time_str, __FILE__, __LINE__, ##__VA_ARGS__) << std::endl; \
+#define PrintInfo(fstr, ...)                                                           \
+  do {                                                                                 \
+    char time_str[32];                                                                 \
+    LOCALTIME(time_str);                                                               \
+    std::string lstr = "<{}> [{}:{}] ";                                            \
+    std::string_view fPath = __FILE__;                                                 \
+    fPath = fPath.substr(strlen(PRIOJECT_PATH), fPath.size() - strlen(PRIOJECT_PATH)); \
+    spdlog::info(lstr + std::string(fstr), time_str, fPath, __LINE__, ##__VA_ARGS__);  \
   } while (0)
 
-#define PrintDebug(fstr, ...)                                                                                     \
-  do {                                                                                                            \
-    char time_str[32];                                                                                            \
-    LOCALTIME(time_str);                                                                                          \
-    std::string lstr = "<D> <{}> [{}:{}] ";                                                                       \
-    std::cout << fmt::format(lstr + std::string(fstr), time_str, __FILE__, __LINE__, ##__VA_ARGS__) << std::endl; \
+#define PrintDebug(fstr, ...)                                                          \
+  do {                                                                                 \
+    char time_str[32];                                                                 \
+    LOCALTIME(time_str);                                                               \
+    std::string lstr = "<{}> [{}:{}] ";                                            \
+    std::string_view fPath = __FILE__;                                                 \
+    fPath = fPath.substr(strlen(PRIOJECT_PATH), fPath.size() - strlen(PRIOJECT_PATH)); \
+    spdlog::debug(lstr + std::string(fstr), time_str, fPath, __LINE__, ##__VA_ARGS__); \
   } while (0)
 
-#define PrintError(fstr, ...)                                                                                     \
-  do {                                                                                                            \
-    char time_str[32];                                                                                            \
-    LOCALTIME(time_str);                                                                                          \
-    std::string lstr = "<E> <{}> [{}:{}] ";                                                                       \
-    std::cerr << fmt::format(lstr + std::string(fstr), time_str, __FILE__, __LINE__, ##__VA_ARGS__) << std::endl; \
+#define PrintError(fstr, ...)                                                          \
+  do {                                                                                 \
+    char time_str[32];                                                                 \
+    LOCALTIME(time_str);                                                               \
+    std::string lstr = "<{}> [{}:{}] ";                                            \
+    std::string_view fPath = __FILE__;                                                 \
+    fPath = fPath.substr(strlen(PRIOJECT_PATH), fPath.size() - strlen(PRIOJECT_PATH)); \
+    spdlog::error(lstr + std::string(fstr), time_str, fPath, __LINE__, ##__VA_ARGS__); \
   } while (0)
 
 

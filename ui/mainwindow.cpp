@@ -14,19 +14,19 @@ namespace fs = std::filesystem;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   try {
+    PrintDebug("MainWindow init");
     // g_mainWindowPtr.reset(this);
     ui->setupUi(this);
     // 设置无边框
     this->setWindowFlag(Qt::FramelessWindowHint);
-
     connect(ui->systitle_button_min, &QPushButton::clicked, this, &MainWindow::sysButtonEventMin);
     connect(ui->ctrl_tabWidget, &QTabWidget::currentChanged, this, &MainWindow::ctrlEventTabChanged);
-
+    PrintDebug("MainWindow initMenu");
     initMenu();
     m_sysTrayIcon.setToolTip("tt");
     m_sysTrayIcon.setIcon(QIcon("://res/default/logo.ico"));
     m_sysTrayIcon.show();
-
+    PrintDebug("check res");
     // 检查res文件夹
     if (!fs::exists("res")) {
       // 不存在创建
@@ -36,15 +36,23 @@ MainWindow::MainWindow(QWidget *parent)
         throw std::runtime_error(fmt::format("创建res资源文件夹失败!\n{}", e.what()));
       }
     }
-
+    PrintDebug("ctrlInit");
     ctrlInit(parent);
+    PrintDebug("ctrlHomeInit");
     ctrlHomeInit(parent);
+    PrintDebug("ctrlRgbInit");
     ctrlRgbInit(parent);
+    PrintDebug("ctrlSettingInit");
     ctrlSettingInit(parent);
+    PrintDebug("knobInit");
     knobInit(parent);
+    PrintDebug("ctrlEinkInit");
     ctrlEinkInit(parent);
+    PrintDebug("ctrlOLEDInit");
     ctrlOLEDInit(parent);
+    PrintDebug("ctrlPluginInit");
     ctrlPluginInit(parent);
+    PrintDebug("knobChatsInit");
     knobChatsInit(parent);
 
   } catch (std::exception &e) {
@@ -91,21 +99,32 @@ bool MainWindow::checkCtrlConnect() {
     // TODO: 未连接设备
     return false;
   }
-  auto dev = hid_open_path(m_modelConnectStatus[HW_MODEL_NAME_CTRL].Path.toStdString().c_str());
-  if (dev == nullptr) {
-    return false;
+  Lib::HWDeviceTools tools;
+  std::vector<Lib::HWDevice> HWDevicesList;
+  tools.GetHWDynamicDevicesList(HWDevicesList);
+  for (auto &i: HWDevicesList) {
+    if (i.Path == m_modelConnectStatus[HW_MODEL_NAME_CTRL].Path) {
+      return true;
+    }
   }
-  DEFER(hid_close(dev));
-  return true;
+  return false;
+  // return tools.OpenDevice(m_modelConnectStatus[HW_MODEL_NAME_CTRL].Path);
+//  return tools.OpenDevice(m_modelConnectStatus[HW_MODEL_NAME_CTRL].Path,[](hid_device_ *dev){
+//    if (dev == nullptr) {
+//      return false;
+//    }
+//    return true;
+//  },false);
 }
 
-Lib::HWDevice MainWindow::getCtrlConnectDev() {
+Lib::HWDevice& MainWindow::getCtrlConnectDev() {
+  static Lib::HWDevice empty;
   if (m_modelConnectStatus.empty()){
-    return {};
+    return empty;
   }
   if (m_modelConnectStatus.find(HW_MODEL_NAME_CTRL) == m_modelConnectStatus.end()) {
     // 未连接设备
-    return {};
+    return empty;
   }
   return m_modelConnectStatus[HW_MODEL_NAME_CTRL];
 }
