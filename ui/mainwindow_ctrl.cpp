@@ -6,6 +6,7 @@
 #include "ui/switchdialog.h"
 #include "utils/Log.hpp"
 #include "utils/config.hpp"
+#include "utils/defer.hpp"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <iostream>
@@ -21,7 +22,7 @@ void MainWindow::ctrlInit(QWidget *parent) {
   if (!ctrlPath.empty()) {
     Lib::HWDeviceTools tools;
     std::vector<Lib::HWDevice> HWDevicesList;
-    tools.GetHWDevicesList(HWDevicesList);
+    tools.GetHWDynamicDevicesList(HWDevicesList);
     for (auto &i: HWDevicesList) {
       if (i.Path == QString::fromStdString(ctrlPath)) {
         m_modelConnectStatus[HW_MODEL_NAME_CTRL] = i;
@@ -44,10 +45,11 @@ void MainWindow::ctrlEventSwitchDevices(bool checked) {
   std::map<std::string, int> data;
   std::vector<Lib::HWDevice> HWDevicesList;
   Lib::HWDeviceTools tools;
-  tools.GetHWDevicesList(HWDevicesList);
+  tools.GetHWDynamicDevicesList(HWDevicesList);
   for (size_t i = 0; i < HWDevicesList.size(); ++i) {
     data[HWDevicesList[i].ProductName.toStdString()] = i;
   }
+
   std::shared_ptr<int> result = std::make_shared<int>(-1);
   auto pDialog = new SwitchDialog(data, result, this);
   pDialog->exec();
@@ -62,12 +64,27 @@ void MainWindow::ctrlEventSwitchDevices(bool checked) {
   ctrlEventConnectDevices();
 }
 
-std::shared_ptr<std::thread> ctrlConnectTickThread = nullptr;
+extern std::shared_ptr<std::thread> ctrlConnectTickThread;
+
 
 void MainWindow::ctrlEventConnectDevices() {
   if (m_modelConnectStatus.find(HW_MODEL_NAME_CTRL) == m_modelConnectStatus.end()) { return; }
-  Lib::HWDeviceTools tools;
-  auto ver = tools.GetDynamicVersion(m_modelConnectStatus[HW_MODEL_NAME_CTRL]);
+  Lib::HWDeviceDynamicVersion ver;
+  try {
+    Lib::HWDeviceTools tools;
+    ver = tools.GetDynamicVersion(m_modelConnectStatus[HW_MODEL_NAME_CTRL]);
+  } catch (Lib::DeviceException &e) {
+    PrintError("扩展连接断开");
+    // 未连接设备
+    // 断开设备
+    if (ui->systitle_button_connect->text() != "连接设备") {
+      ui->systitle_button_connect->setText("连接设备");
+      ui->ctrl_tabWidget->setEnabled(false);
+      ui->ctrl_groupBox_version->setVisible(false);
+      m_modelConnectStatus.erase(HW_MODEL_NAME_CTRL);
+    }
+  }
+
   ui->systitle_button_connect->setText("断开连接");
   ui->ctrl_tabWidget->setEnabled(true);
   ui->ctrl_groupBox_version->setVisible(true);
@@ -78,11 +95,26 @@ void MainWindow::ctrlEventConnectDevices() {
     // 插件tick事件
     ctrlConnectTickThread = std::make_shared<std::thread>([this]() {
       while (true) {
+        DEFER({
+          // 延迟N秒
+          std::this_thread::sleep_for(std::chrono::seconds(5));
+        });
         if (g_mainWindow == nullptr) {
           continue;
         }
-        PrintDebug("扩展连接Tick: {}", std::to_string(g_mainWindow->checkCtrlConnect()));
-        if (!g_mainWindow->checkCtrlConnect()) {
+        PrintDebug("扩展连接Tick");
+        auto ctrlStstus = false;
+        Lib::HWDeviceTools tools;
+        std::vector<Lib::HWDevice> HWDevicesList;
+        tools.GetHWDynamicDevicesList(HWDevicesList);
+        for (auto &i: HWDevicesList) {
+          if (i.Path == m_modelConnectStatus[HW_MODEL_NAME_CTRL].Path) {
+            ctrlStstus = true;
+          }
+        }
+        PrintDebug("连接状态: {}", ctrlStstus);
+        if (!ctrlStstus) {
+          PrintError("扩展连接断开");
           // 未连接设备
           // 断开设备
           if (ui->systitle_button_connect->text() != "连接设备") {
@@ -91,13 +123,9 @@ void MainWindow::ctrlEventConnectDevices() {
             ui->ctrl_groupBox_version->setVisible(false);
             m_modelConnectStatus.erase(HW_MODEL_NAME_CTRL);
           }
-          // 延迟1秒
-          std::this_thread::sleep_for(std::chrono::seconds(1));
           continue;
         }
-        std::this_thread::sleep_for(std::chrono::seconds(1));
       }
     });
   }
-
 }

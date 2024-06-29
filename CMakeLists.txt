@@ -18,12 +18,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT )
 
+add_definitions(-DPRIOJECT_PATH="${CMAKE_CURRENT_SOURCE_DIR}/")
+
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 endif()
 
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+
+find_package(spdlog REQUIRED)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # debug
+    add_definitions(-D_DEBUG)
+else()
+    # release
+
+endif()
 
 set(TS_FILES hw_tools_zh_CN.ts)
 
@@ -39,8 +51,8 @@ file(GLOB PROTOBUF_SOURCES lib/protobuf/*.cpp)
 file(GLOB PROTOBUFCC_SOURCES lib/protobuf/*.cc)
 file(GLOB Plugin_SOURCES lib/plugin/*.cpp)
 file(GLOB QWT_SOURCES lib/qwt/*.cpp)
-include_directories(lib/fmt/inc)
-file(GLOB FMT_SOURCES lib/fmt/src/*.cc)
+##include_directories(lib/fmt/inc)
+#file(GLOB FMT_SOURCES lib/fmt/src/*.cc)
 #file(GLOB QT_SOURCES ui/*.cpp)
 
 set(PROJECT_SOURCES_LIB
@@ -63,9 +75,14 @@ set(PROJECT_SOURCES_APP
         res.qrc
         ui/widget/KnobDashboard.cpp
         ui/widget/KnobDashboard.hpp
+        # 电机校准窗口
         ui/knobaligndialog.h
         ui/knobaligndialog.cpp
         ui/knobaligndialog.ui
+        # 按键选择器
+        ui/keyselection.h
+        ui/keyselection.cpp
+        ui/keyselection.ui
         main.cpp
 )
 
@@ -150,6 +167,7 @@ target_link_libraries(hw_tools PRIVATE
         -lhidapi
         protobuf::libprotobuf
         -lpthread
+        spdlog::spdlog
 )
 target_link_libraries(ImageConvert PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets

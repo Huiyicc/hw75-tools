@@ -16,4 +16,5 @@ namespace utils{
 		QImage image = QImage::fromData(imageData);
 		return image;
 	}
+
 }

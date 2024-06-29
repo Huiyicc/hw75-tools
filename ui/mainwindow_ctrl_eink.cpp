@@ -77,7 +77,7 @@ void MainWindow::ctrlEventEinkPushImage(bool checked) {
     ui->ctrl_eink_button_pushImage->setText("推送中");
     Lib::HWDeviceTools tools;
 
-    tools.SetDynamicEinkScerrn(getCtrlConnectDev().Path, *m_userPushImage->BinaryImgDataToBits(
+    tools.SetDynamicEinkScerrn(getCtrlConnectDev(), *m_userPushImage->BinaryImgDataToBits(
                                                              ui->ctrl_eink_image_threshold_horizontalSlider->value()));
     QMessageBox::information(this, "信息", QString::fromStdString("推送成功"));
   } catch (Lib::DeviceException &e) {
@@ -99,7 +99,7 @@ bool MainWindow::ctrlEinkPushImage(const char *data, int len) {
     QByteArray byteArray(data, len);
     auto imgLib = Lib::Image(QImage::fromData(byteArray));
     Lib::HWDeviceTools tools;
-    tools.SetDynamicEinkScerrn(getCtrlConnectDev().Path, *imgLib.BinaryImgDataToBits(155));
+    tools.SetDynamicEinkScerrn(getCtrlConnectDev(), *imgLib.BinaryImgDataToBits(155));
     // QMessageBox::information(this, "信息", QString::fromStdString("推送成功"));
     return true;
   } catch (Lib::DeviceException &e) {

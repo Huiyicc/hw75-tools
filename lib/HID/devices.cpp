@@ -3,21 +3,29 @@
 //
 #include "devices.hpp"
 #include "QThread"
+#include "utils/Log.hpp"
+#include "utils/coding.hpp"
 #include "utils/defer.hpp"
 #include "utils/math.hpp"
-#include "utils/Log.hpp"
 #include <mutex>
 #include <sstream>
 #include <thread>
 
 // hid操作id
 enum HID_OPERATE_MODE {
-    CONFIG_ = 1,
-    EINK_ = 2,
-    OLED_ = 3,
+  CONFIG_ = 1,
+  EINK_ = 2,
+  OLED_ = 3,
 };
 
 std::mutex send_mutex;
+
+#define MutexLock()  \
+  send_mutex.lock(); \
+  PrintDebug("get lock")
+
+#define MutexUnlock()  \
+  DEFER({send_mutex.unlock();PrintDebug("release lock");})
 
 void SplitData(const std::vector<unsigned char> &sourceData, std::vector<std::vector<unsigned char>> &messageDatas,
                size_t chunkSize) {
@@ -51,20 +59,14 @@ std::string padStringWithZeros(const std::string &str, int desired_length) {
 namespace Lib {
 
 HWDeviceTools::HWDeviceTools() {
-  // 初始化上下文
-  auto r = hid_init();
-  if (r) {
-    throw DeviceException(hid_error(nullptr));
-  }
 }
 
 HWDeviceTools::~HWDeviceTools() {
-  hid_exit();
 }
 
-size_t HWDeviceTools::GetHWDevicesList(std::vector<HWDevice> &HWDevicesList) {
-  send_mutex.lock();
-  DEFER(send_mutex.unlock());
+size_t HWDeviceTools::GetHWDynamicDevicesList(std::vector<HWDevice> &HWDevicesList) {
+  MutexLock();
+  MutexUnlock();
   HWDevicesList.clear();
   // 获取连接的HID设备列表
   auto devs = hid_enumerate(0x0, 0x0);
@@ -72,31 +74,29 @@ size_t HWDeviceTools::GetHWDevicesList(std::vector<HWDevice> &HWDevicesList) {
 
   // 开始遍历设备列表
   while (cur_dev) {
-    // 判断设备是否为USB HID设备
-
-    if (cur_dev->product_id == HWPID && cur_dev->vendor_id == HWVID // 判断是否为瀚文设备
-        && cur_dev->usage_page == USB_USAGE_PAGE
-        ) {
-
-      // 打开设备
-      auto handle = hid_open_path(cur_dev->path);
-      wchar_t wstr[256];
-      HWDevice temp;
-      // 获取产品名称
-      hid_get_product_string(handle, wstr, sizeof(wstr) / sizeof(wchar_t));
-      // 填充结构体
-      temp.Path = cur_dev->path;
-      temp.ProductId = cur_dev->product_id;
-      temp.ProductName = QString::fromStdWString(wstr);
-      temp.VendorId = cur_dev->vendor_id;
-      temp.InterfaceNumber = cur_dev->interface_number;
-      temp.Usage = cur_dev->usage;
-      temp.UsagePage = cur_dev->usage_page;
-      temp.SerialNumber = QString::fromStdWString(cur_dev->serial_number);
-
+    // 打开设备
+    auto handle = hid_open_path(cur_dev->path);
+    wchar_t wstr[256];
+    HWDevice temp;
+    // 获取产品名称
+    hid_get_product_string(handle, wstr, sizeof(wstr) / sizeof(wchar_t));
+    // 填充结构体
+    temp.Path = cur_dev->path;
+    temp.ProductId = cur_dev->product_id;
+    temp.ProductName = QString::fromStdWString(wstr);
+    temp.VendorId = cur_dev->vendor_id;
+    temp.InterfaceNumber = cur_dev->interface_number;
+    temp.Usage = cur_dev->usage;
+    temp.UsagePage = cur_dev->usage_page;
+    temp.SerialNumber = QString::fromStdWString(cur_dev->serial_number);
+    //PrintDebug("check: {}",temp.toJson().dump());
+    // 判断设备是否为指定的USB HID设备
+    if (cur_dev->product_id == HWPID && cur_dev->vendor_id == HWVID// 判断是否为瀚文设备
+        && cur_dev->usage_page == USB_USAGE_PAGE && cur_dev->usage == USB_USAGE_DEFAULT) {
       HWDevicesList.push_back(temp);
-      hid_close(handle);
+      //PrintDebug("append: {}",temp.toJson().dump());
     }
+    hid_close(handle);
     // 指向下一个设备
     cur_dev = cur_dev->next;
   }
@@ -107,17 +107,19 @@ size_t HWDeviceTools::GetHWDevicesList(std::vector<HWDevice> &HWDevicesList) {
 };
 
 HWDeviceDynamicVersion HWDeviceTools::GetDynamicVersion(HWDevice &devices) {
+  MutexLock();
+  MutexUnlock();
   HWDeviceDynamicVersion result;
   auto device = hid_open_path(devices.Path.toStdString().c_str());
   if (!device) {
-    throw DeviceException(hid_error(nullptr));
+    throw DeviceException(hid_error(device));
   }
   hid::msg::PcMessage message;
   message.set_id(hid::msg::MessageId::VERSION);
   hid::msg::Nil *nil = message.mutable_nil();
 
   // 发送消息
-  int result_code = sendMessage(device, message);
+  int result_code = sendMessage(devices,device, message,false);
 
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
@@ -139,25 +141,18 @@ HWDeviceDynamicVersion HWDeviceTools::GetDynamicVersion(HWDevice &devices) {
   // 关闭设备
   hid_close(device);
   return result;
-
 };
+
 
 void HWDeviceTools::SetDynamicEinkScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar) {
-  SetDynamicEinkScerrn(devices.Path, imageArrar);
-};
-
-void HWDeviceTools::SetDynamicEinkScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar) {
-  SetDynamicScerrn(2, devicesPath, imageArrar);
+  SetDynamicScerrn(2, devices, imageArrar);
 };
 
 // 获取扩展应用配置
 KnobAppConf HWDeviceTools::GetDynamicAppinConf(HWDevice &devices, int appid) {
-  return GetDynamicAppinConf(devices.Path, appid);
-};
-
-KnobAppConf HWDeviceTools::GetDynamicAppinConf(const QString &devicesPath, int appid) {
-  auto device = hid_open_path(devicesPath.toStdString().c_str());
-
+  MutexLock();
+  MutexUnlock();
+  auto device = hid_open_path(devices.Path.toStdString().c_str());
   if (!device) {
     throw DeviceException(hid_error(nullptr));
   }
@@ -167,7 +162,7 @@ KnobAppConf HWDeviceTools::GetDynamicAppinConf(const QString &devicesPath, int a
   knobMsg->set_id(hid::msg::KnobMessage::GetAppConfig);
   knobMsg->set_appid(appid);
   // 发送消息
-  int result_code = sendMessage(device, message);
+  int result_code = sendMessage(devices,device, message,false);
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
   // 处理返回的字节流
@@ -197,14 +192,10 @@ KnobAppConf HWDeviceTools::GetDynamicAppinConf(const QString &devicesPath, int a
   return result;
 };
 
-void
-HWDeviceTools::SetDynamicAppinConf(HWDevice &devices, int appId, hid::msg::SetAppType setAppType, KnobAppConf &conf) {
-  SetDynamicAppinConf(devices.Path, appId, setAppType, conf);
-};
-
-void HWDeviceTools::SetDynamicAppinConf(const QString &devicesPath, int appId, hid::msg::SetAppType setAppType,
-                                        KnobAppConf &conf) {
-  auto device = hid_open_path(devicesPath.toStdString().c_str());
+void HWDeviceTools::SetDynamicAppinConf(HWDevice &devices, int appId, hid::msg::SetAppType setAppType, KnobAppConf &conf) {
+  MutexLock();
+  MutexUnlock();
+  auto device = hid_open_path(devices.Path.toStdString().c_str());
   if (!device) {
     throw DeviceException(hid_error(nullptr));
   }
@@ -233,18 +224,18 @@ void HWDeviceTools::SetDynamicAppinConf(const QString &devicesPath, int appId, h
     knobMsg->set_addedvalue(conf.AddedValue);
   }
   // 发送消息
-  int result_code = sendMessage(device, message);
+  int result_code = sendMessage(devices,device, message,false);
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
 
-  result_code = hid_read_timeout(device, data.get(), result_code, 300);;
+  result_code = hid_read_timeout(device, data.get(), result_code, 300);
   if (result_code < 0) {
     auto err = hid_error(device);
     // 处理发送失败的情况
     hid_close(device);
     throw DeviceException(err);
   }
-  if (data.get()[0] != 0x4 || data.get()[1] == 0x0) {
+  if (data.get()[0] != devices.Usage || data.get()[1] == 0x0) {
     // 关闭设备
     hid_close(device);
     throw DeviceException(L"推送失败");
@@ -254,6 +245,8 @@ void HWDeviceTools::SetDynamicAppinConf(const QString &devicesPath, int appId, h
 };
 
 CtrlSysCfg HWDeviceTools::GetDynamicSysConf(HWDevice &devices) {
+  MutexLock();
+  MutexUnlock();
   auto device = hid_open_path(devices.Path.toStdString().c_str());
 
   if (!device) {
@@ -263,7 +256,7 @@ CtrlSysCfg HWDeviceTools::GetDynamicSysConf(HWDevice &devices) {
   message.set_id(hid::msg::MessageId::GET_SYS_CFG);
 
   // 发送消息
-  int result_code = sendMessage(device, message);
+  int result_code = sendMessage(devices,device, message,false);
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
   // 处理返回的字节流
@@ -280,6 +273,8 @@ CtrlSysCfg HWDeviceTools::GetDynamicSysConf(HWDevice &devices) {
 }
 
 void HWDeviceTools::SetDynamicSysConf(HWDevice &devices, const CtrlSysCfg &conf) {
+  MutexLock();
+  MutexUnlock();
   auto device = hid_open_path(devices.Path.toStdString().c_str());
 
   if (!device) {
@@ -292,7 +287,7 @@ void HWDeviceTools::SetDynamicSysConf(HWDevice &devices, const CtrlSysCfg &conf)
   sc->set_sleeptime(conf.SleepTime);
 
   // 发送消息
-  int result_code = sendMessage(device, message);
+  int result_code = sendMessage(devices,device, message,false);
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
   result_code = hid_read_timeout(device, data.get(), result_code, 300);
@@ -303,7 +298,7 @@ void HWDeviceTools::SetDynamicSysConf(HWDevice &devices, const CtrlSysCfg &conf)
     throw DeviceException(err);
   }
   // 处理返回的字节流
-  if (data.get()[0] != 0x4 || data.get()[1] == 0x0) {
+  if (data.get()[0] != devices.Usage || data.get()[1] == 0x0) {
     // 关闭设备
     hid_close(device);
     throw DeviceException(L"推送失败");
@@ -313,18 +308,14 @@ void HWDeviceTools::SetDynamicSysConf(HWDevice &devices, const CtrlSysCfg &conf)
 }
 
 void HWDeviceTools::SetDynamicOLEDScerrn(HWDevice &devices, std::vector<unsigned char> &imageArrar) {
-  SetDynamicOLEDScerrn(devices.Path, imageArrar);
+  SetDynamicScerrn(3, devices, imageArrar);
 }
 
-void HWDeviceTools::SetDynamicOLEDScerrn(const QString &devicesPath, std::vector<unsigned char> &imageArrar) {
-  SetDynamicScerrn(3, devicesPath, imageArrar);
-}
-
-void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::vector<unsigned char> &imageArrar) {
-  send_mutex.lock();
-  DEFER(send_mutex.unlock());
+void HWDeviceTools::SetDynamicScerrn(int id, HWDevice &devices, std::vector<unsigned char> &imageArrar) {
+  MutexLock();
+  MutexUnlock();
   HWDeviceDynamicVersion result;
-  auto device = hid_open_path(devicesPath.toStdString().c_str());
+  auto device = hid_open_path(devices.Path.toStdString().c_str());
   if (!device) {
     //send_mutex.unlock();
     throw DeviceException(hid_error(nullptr));
@@ -381,14 +372,12 @@ void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::ve
     hid_close(device);
     //send_mutex.unlock();
     // 处理发送失败的情况
-    hid_close(device);
     throw DeviceException(err);
   }
-  if (data.get()[0] != 0x4 || data.get()[1] != 0x2 || data.get()[2] != 0x2 || data.get()[2] != 0x2) {
+  if (data.get()[0] != devices.Usage || data.get()[1] != 0x2 || data.get()[2] != 0x2 || data.get()[2] != 0x2) {
     // 关闭设备
     hid_close(device);
     //send_mutex.unlock();
-    hid_close(device);
     throw DeviceException(L"推送失败");
   }
   // 关闭设备
@@ -396,20 +385,20 @@ void HWDeviceTools::SetDynamicScerrn(int id, const QString &devicesPath, std::ve
   //send_mutex.unlock();
 }
 
-HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(const HWDevice& devices) {
+HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(HWDevice &devices) {
+  MutexLock();
+  MutexUnlock();
   HWDeviceDynamicKnobStatus result;
   auto device = hid_open_path(devices.Path.toStdString().c_str());
   if (!device) {
     throw DeviceException(hid_error(nullptr));
   }
-  send_mutex.lock();
-  DEFER(send_mutex.unlock());
   hid::msg::PcMessage message;
   message.set_id(hid::msg::MessageId::MOTOR_GET_STATUS);
   hid::msg::Nil *nil = message.mutable_nil();
 
   // 发送消息
-  int result_code = sendMessage(device, message,false);
+  int result_code = sendMessage(devices,device, message, false);
 
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
@@ -418,7 +407,7 @@ HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(const HWDevice& devices) 
 
   try {
     readMessage(device, ctrlMessage, result_code);
-  } catch (const DeviceException&e) {
+  } catch (const DeviceException &e) {
     //send_mutex.unlock();
     throw e;
   }
@@ -442,20 +431,20 @@ HWDeviceDynamicKnobStatus HWDeviceTools::GetKnobStatus(const HWDevice& devices) 
   return result;
 };
 
-HWDeviceDynamicRGBStatus HWDeviceTools::GetRgbConfig(const HWDevice& devices,int id) {
+HWDeviceDynamicRGBStatus HWDeviceTools::GetRgbConfig(HWDevice &devices, int id) {
+  MutexLock();
+  MutexUnlock();
   HWDeviceDynamicRGBStatus result;
   auto device = hid_open_path(devices.Path.toStdString().c_str());
   if (!device) {
     throw DeviceException(hid_error(nullptr));
   }
-  send_mutex.lock();
-  DEFER(send_mutex.unlock());
   hid::msg::PcMessage message;
   message.set_id(hid::msg::MessageId::GET_RGB_CONFIG);
   hid::msg::rgbConfig *rgb = message.mutable_rgb_status();
   rgb->set_id(id);
   // 发送消息
-  int result_code = sendMessage(device, message,false);
+  int result_code = sendMessage(devices,device, message, false);
 
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
@@ -464,7 +453,7 @@ HWDeviceDynamicRGBStatus HWDeviceTools::GetRgbConfig(const HWDevice& devices,int
 
   try {
     readMessage(device, ctrlMessage, result_code);
-  } catch (const DeviceException&e) {
+  } catch (const DeviceException &e) {
     //send_mutex.unlock();
     throw e;
   }
@@ -489,13 +478,13 @@ HWDeviceDynamicRGBStatus HWDeviceTools::GetRgbConfig(const HWDevice& devices,int
   return result;
 }
 
-void HWDeviceTools::SetDynamicRgbConfig(const HWDevice &devices, int id, const HWDeviceDynamicRGBStatus &conf) {
+void HWDeviceTools::SetDynamicRgbConfig(HWDevice &devices, int id, const HWDeviceDynamicRGBStatus &conf) {
+  MutexLock();
+  MutexUnlock();
   auto device = hid_open_path(devices.Path.toStdString().c_str());
   if (!device) {
     throw DeviceException(hid_error(nullptr));
   }
-  send_mutex.lock();
-  DEFER(send_mutex.unlock());
   //DEFER(hid_close(device));
   hid::msg::PcMessage message;
   message.set_id(hid::msg::MessageId::SET_RGB_CONFIG);
@@ -508,10 +497,11 @@ void HWDeviceTools::SetDynamicRgbConfig(const HWDevice &devices, int id, const H
   rgb->set_sleep_off(conf.sleep_off);
 
   // 发送消息
-  int result_code = sendMessage(device, message,false);
+  int result_code = sendMessage(devices,device, message, false);
   // 读取USB设备返回的字节流
   std::shared_ptr<uint8_t> data(new uint8_t[result_code]);
-  result_code = hid_read_timeout(device, data.get(), result_code, 300);;
+  result_code = hid_read_timeout(device, data.get(), result_code, 300);
+  ;
   if (result_code < 0) {
     auto err = hid_error(device);
     // 处理发送失败的情况
@@ -519,7 +509,7 @@ void HWDeviceTools::SetDynamicRgbConfig(const HWDevice &devices, int id, const H
     throw DeviceException(err);
   }
   // 处理返回的字节流
-  if (data.get()[0] != 0x4 || data.get()[1] == 0x0) {
+  if (data.get()[0] != devices.Usage || data.get()[1] == 0x0) {
     // 关闭设备
     hid_close(device);
     //send_mutex.unlock();
@@ -528,7 +518,6 @@ void HWDeviceTools::SetDynamicRgbConfig(const HWDevice &devices, int id, const H
   // 关闭设备
   hid_close(device);
   //send_mutex.unlock();
-
 }
 
 int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message, int messageSize) {
@@ -565,7 +554,7 @@ int HWDeviceTools::readMessage(hid_device_ *dev, hid::msg::CtrlMessage &message,
 };
 
 // 发送消息,外部调用禁止上锁
-int HWDeviceTools::sendMessage(hid_device_ *dev, hid::msg::PcMessage &message,bool lock) {
+int HWDeviceTools::sendMessage(HWDevice &hwdevices,hid_device_ *dev, hid::msg::PcMessage &message, bool lock) {
   if (lock) {
     send_mutex.lock();
   }
@@ -599,7 +588,7 @@ int HWDeviceTools::sendMessage(hid_device_ *dev, hid::msg::PcMessage &message,bo
       if (scount > 0) {
         chunk.insert(chunk.end(), scount, 0);
       }
-      chunk[0] = 0x4;
+      chunk[0] = hwdevices.Usage;
       chunk[1] = (currentIndex + chunkSize) < dataSize;
       chunk[2] = chunkSizeToCopy + 1;
       messageDatas.push_back(chunk);
@@ -626,6 +615,8 @@ int HWDeviceTools::sendMessage(hid_device_ *dev, hid::msg::PcMessage &message,bo
       auto err = hid_error(dev);
       // 处理发送失败的情况
       hid_close(dev);
+
+      PrintError("from:{} SendMessage: {}",hwdevices.toJson().dump(),utils::VectorToHexStr(msg_data, true));
       throw DeviceException(err);
     }
     result = result_code;
@@ -640,9 +631,9 @@ void HWDeviceTools::readDelimitedD2P(google::protobuf::io::ZeroCopyInputStream *
                                      hid::msg::CtrlMessage *message) {
   // 创建一个新的编码流用于每个消息。
   google::protobuf::io::CodedInputStream input(rawInput);
-//  if (!message->MergeFromCodedStream(&input)) {
-//    throw DeviceException(L"readDelimitedFrom MergeFromCodedStream 错误。");
-//  }
+  //  if (!message->MergeFromCodedStream(&input)) {
+  //    throw DeviceException(L"readDelimitedFrom MergeFromCodedStream 错误。");
+  //  }
 
 
   // 读取消息的大小。
@@ -687,4 +678,24 @@ void HWDeviceTools::writeDelimitedP2D(const hid::msg::PcMessage &message,
   }
 }
 
+bool HWDeviceTools::OpenDevice(const QString &path, std::function<bool(hid_device_ *dev)> openCallback, bool async) {
+  if (async) {
+    if (!send_mutex.try_lock()) {
+      return false;
+    }
+  } else {
+    send_mutex.lock();
+  }
+  DEFER(send_mutex.unlock());
+  auto device = hid_open_path(path.toStdString().c_str());
+  if (!device) {
+    return false;
+  }
+  DEFER(hid_close(device));
+  if (openCallback == nullptr) {
+    return true;
+  }
+  return openCallback(device);
 }
+
+}// namespace Lib

@@ -36,6 +36,8 @@ void MainWindow::ctrlHomeInit(QWidget *parent) {
     ui->ctrl_home_update_mode_switch_gitee->setChecked(false);
   }
   ui->ctrl_setting_sleep_time_groupBox_5->setVisible(false);
+  ui->groupBox_16->setVisible(false);
+
 }
 
 void MainWindow::ctrlHomeEventUpdateModeSwitchClicked(bool checked) {
